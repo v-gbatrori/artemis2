@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Artemis II · Orion</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#000;overflow:hidden}
+#wrap{position:relative;width:100%;height:100vh;min-height:520px;background:#000;overflow:hidden;font-family:'Georgia',serif}
+canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+#ui{position:absolute;inset:0;pointer-events:none}
+#ui *{pointer-events:auto}
+#barTop{position:absolute;top:0;left:0;right:0;height:clamp(28px,5vh,56px);background:linear-gradient(180deg,#000 55%,transparent);z-index:5;pointer-events:none}
+#barBot{position:absolute;bottom:0;left:0;right:0;height:clamp(28px,5vh,56px);background:linear-gradient(0deg,#000 55%,transparent);z-index:5;pointer-events:none}
+#vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.72) 100%);pointer-events:none;z-index:4}
+#title{position:absolute;top:clamp(6px,1.5vh,16px);left:50%;transform:translateX(-50%);text-align:center;z-index:10;pointer-events:none;white-space:nowrap}
+#title h1{font-size:clamp(12px,1.3vw,20px);font-weight:400;letter-spacing:0.28em;color:rgba(255,255,255,0.92);text-transform:uppercase;text-shadow:0 0 30px rgba(255,200,100,0.3)}
+#title p{font-size:clamp(7px,0.62vw,11px);letter-spacing:0.38em;color:rgba(255,180,80,0.65);margin-top:2px;text-transform:uppercase}
+#panelL{position:absolute;top:clamp(45px,9vh,90px);left:clamp(10px,2vw,28px);width:clamp(155px,15vw,250px);z-index:10}
+.cine-block{margin-bottom:clamp(7px,1vh,15px)}
+.cine-label{font-size:clamp(7px,0.58vw,10px);letter-spacing:0.2em;color:rgba(255,180,80,0.55);text-transform:uppercase;margin-bottom:2px}
+.cine-val{font-size:clamp(13px,1.2vw,20px);color:#fff;font-weight:300;letter-spacing:0.05em;text-shadow:0 2px 18px rgba(255,180,80,0.28)}
+.cine-divider{height:1px;background:linear-gradient(90deg,rgba(255,180,80,0.35),transparent);margin:clamp(5px,.8vh,12px) 0}
+.cine-sm{font-size:clamp(8px,0.68vw,12px);color:rgba(255,255,255,0.6);letter-spacing:0.07em;margin-bottom:clamp(3px,.5vh,7px)}
+.cine-sm span{color:rgba(255,210,110,0.88);font-style:italic}
+#feedBox{position:absolute;bottom:clamp(45px,8vh,85px);left:clamp(10px,2vw,28px);width:clamp(200px,22vw,340px);z-index:10;background:#000;border:1px solid rgba(255,180,80,0.22);border-radius:2px;overflow:hidden;box-shadow:0 0 30px rgba(0,0,0,0.6)}
+#feedLabel{background:rgba(190,30,30,0.9);color:#fff;font-size:clamp(7px,0.58vw,10px);letter-spacing:0.18em;padding:4px 9px;display:flex;align-items:center;gap:6px;font-family:'Georgia',serif}
+#feedDot{width:6px;height:6px;border-radius:50%;background:#ff3333;flex:none;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+#feedContent iframe{display:block;width:100%;aspect-ratio:16/9;border:none;pointer-events:auto;background:#000}
+#feedSub{padding:4px 8px;font-size:clamp(7px,0.56vw,9px);color:rgba(255,200,120,0.55);letter-spacing:0.1em;background:rgba(0,0,0,0.5)}
+#feedSub a{color:rgba(255,210,110,0.9);text-decoration:none}
+#panelR{position:absolute;top:clamp(45px,9vh,90px);right:clamp(10px,2vw,28px);width:clamp(155px,15vw,245px);z-index:10}
+.tl-wrap{position:relative;padding-left:18px}
+.tl-line-bg{position:absolute;left:6px;top:0;bottom:0;width:1px;background:linear-gradient(180deg,rgba(255,180,80,0.08),rgba(255,180,80,0.32),rgba(255,180,80,0.08))}
+.tl-item{position:relative;margin-bottom:clamp(6px,.9vh,13px);opacity:.32;transition:opacity .5s}
+.tl-item.done{opacity:.58}
+.tl-item.active{opacity:1}
+.tl-dot{position:absolute;left:-15px;top:3px;width:8px;height:8px;border-radius:50%;border:1px solid rgba(255,180,80,0.35);background:transparent;transition:all .3s}
+.tl-item.done .tl-dot{background:rgba(255,180,80,0.38);border-color:rgba(255,180,80,0.65)}
+.tl-item.active .tl-dot{background:#ffb450;border-color:#ffb450;box-shadow:0 0 10px rgba(255,180,80,0.8);animation:blink 1.3s infinite}
+.tl-name{font-size:clamp(7px,0.62vw,10px);letter-spacing:0.13em;color:rgba(255,200,120,0.82);text-transform:uppercase}
+.tl-desc{font-size:clamp(6px,0.55vw,9px);color:rgba(255,255,255,0.36);margin-top:1px;font-style:italic}
+#moonPanel{position:absolute;bottom:clamp(45px,8vh,85px);right:clamp(10px,2vw,28px);width:clamp(140px,15vw,230px);z-index:10;opacity:0;transition:opacity 1.8s;pointer-events:none}
+#moonPanel.visible{opacity:1}
+#moonPanelLabel{font-size:clamp(6px,0.58vw,10px);letter-spacing:0.2em;color:rgba(255,180,80,0.45);text-transform:uppercase;margin-bottom:4px}
+#moonCanvas{display:block;width:100%;aspect-ratio:1;border-radius:2px;border:1px solid rgba(255,180,80,0.18)}
+#moonAlt{font-size:clamp(7px,0.6vw,10px);color:rgba(255,200,120,0.6);margin-top:3px;letter-spacing:0.09em}
+#progBar{position:absolute;bottom:clamp(8px,2vh,24px);left:clamp(10px,2vw,28px);right:clamp(10px,2vw,28px);z-index:10;display:flex;align-items:center;gap:clamp(5px,.8vw,12px)}
+.prog-label{font-size:clamp(6px,0.55vw,9px);letter-spacing:0.16em;color:rgba(255,180,80,0.45);text-transform:uppercase;white-space:nowrap}
+.prog-track{flex:1;height:1px;background:rgba(255,180,80,0.1)}
+.prog-fill{height:100%;background:linear-gradient(90deg,rgba(255,110,0,0.55),rgba(255,200,80,0.85));transition:width .6s;box-shadow:0 0 8px rgba(255,160,40,0.3)}
+.prog-pct{font-size:clamp(7px,0.6vw,10px);color:rgba(255,200,120,0.6);white-space:nowrap;font-family:'Georgia',serif}
+#btnRow{position:absolute;top:clamp(6px,1.5vh,16px);right:clamp(10px,2vw,28px);display:flex;gap:5px;z-index:10}
+.btn{appearance:none;font-family:'Georgia',serif;border:1px solid rgba(255,180,80,0.2);background:rgba(0,0,0,0.55);color:rgba(255,200,120,0.75);border-radius:2px;padding:clamp(4px,.55vh,8px) clamp(7px,.8vw,12px);font-size:clamp(7px,0.6vw,10px);cursor:pointer;letter-spacing:0.1em;text-transform:uppercase;transition:all .22s}
+.btn:hover{background:rgba(255,130,0,0.14);border-color:rgba(255,180,80,0.55);color:#fff}
+#syncBadge{position:absolute;top:clamp(6px,1.5vh,16px);left:50%;transform:translateX(-50%) translateX(clamp(70px,7vw,120px));font-size:clamp(6px,0.55vw,9px);color:rgba(255,180,80,0.3);letter-spacing:0.16em;z-index:10;pointer-events:none;white-space:nowrap}
+@media (max-width: 900px){
+  #panelR{display:none}
+  #feedBox{width:clamp(180px,40vw,320px)}
+}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="bgC"></canvas>
+  <canvas id="c"></canvas>
+  <div id="vignette"></div>
+  <div id="barTop"></div><div id="barBot"></div>
+
+  <div id="title">
+    <h1>Artemis II · Orion</h1>
+    <p>First crewed lunar mission since Apollo 17 · 1972</p>
+  </div>
+  <div id="syncBadge">SYNC <span id="cntDown">30</span>s</div>
+
+  <div id="ui">
+    <div id="panelL">
+      <div class="cine-block">
+        <div class="cine-label">Mission Elapsed Time</div>
+        <div class="cine-val" id="vMet">—</div>
+      </div>
+      <div class="cine-divider"></div>
+      <div class="cine-block">
+        <div class="cine-label">Current Phase</div>
+        <div class="cine-val" id="vPhase" style="font-size:clamp(10px,.92vw,16px)">—</div>
+      </div>
+      <div class="cine-block">
+        <div class="cine-sm">From Earth &nbsp;<span id="vEd">—</span></div>
+        <div class="cine-sm">From Moon &nbsp;<span id="vMd">—</span></div>
+        <div class="cine-sm">Velocity &nbsp;&nbsp;&nbsp;<span id="vVel">—</span></div>
+      </div>
+      <div class="cine-divider"></div>
+      <div class="cine-block">
+        <div class="cine-label">Crew</div>
+        <div class="cine-sm"><span>Reid Wiseman</span> · Commander</div>
+        <div class="cine-sm"><span>Victor Glover</span> · Pilot</div>
+        <div class="cine-sm"><span>Christina Koch</span> · MS-1</div>
+        <div class="cine-sm"><span>Jeremy Hansen</span> · MS-2</div>
+      </div>
+      <div class="cine-divider"></div>
+      <div class="cine-label" id="vSrc" style="color:rgba(255,180,80,0.35)">PHYSICS MODEL</div>
+    </div>
+
+    <div id="feedBox">
+      <div id="feedLabel"><div id="feedDot"></div>NASA OFFICIAL BROADCAST</div>
+      <div id="feedContent">
+        <iframe
+          id="ytFrame"
+          width="560"
+          height="315"
+          src="https://www.youtube.com/embed/m3kR2KK8TEs?si=MfKtnXXGHzR07fqm&controls=0"
+          title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <div id="feedSub">
+        NASA's Artemis II Live Mission Coverage (Official Broadcast) ·
+        <a href="https://www.youtube.com/watch?v=m3kR2KK8TEs" target="_blank" rel="noopener noreferrer">Open on YouTube ↗</a>
+      </div>
+    </div>
+
+    <div id="panelR">
+      <div class="cine-label" style="margin-bottom:9px;letter-spacing:.18em">Mission Timeline</div>
+      <div class="tl-wrap">
+        <div class="tl-line-bg"></div>
+        <div id="timeline"></div>
+      </div>
+    </div>
+
+    <div id="moonPanel">
+      <div id="moonPanelLabel">Lunar Surface · Close Approach View</div>
+      <canvas id="moonCanvas"></canvas>
+      <div id="moonAlt">Altitude: <span id="moonAltVal">—</span></div>
+    </div>
+
+    <div id="progBar">
+      <span class="prog-label">Mission</span>
+      <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      <span class="prog-pct"><span id="progPct">0</span>% · <span id="daysLeft">—</span></span>
+    </div>
+
+    <div id="btnRow">
+      <button class="btn" onclick="window.open('https://www.nasa.gov/trackartemis','_blank')">AROW ↗</button>
+      <button class="btn" onclick="window.open('https://www.youtube.com/watch?v=m3kR2KK8TEs','_blank')">YouTube ↗</button>
+      <button class="btn" onclick="toggleFS()">⛶ FS</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LAUNCH=new Date('2026-04-01T22:35:00Z');
+const DUR=10*24*3600;
+const MOON_PERIOD=27.321661*24*3600;
+const MOON_A=384400;
+
+const MILESTONES=[
+  {label:'LAUNCH',t:0,desc:'SLS liftoff · LC-39B'},
+  {label:'EARTH ORBIT',t:.5*3600,desc:'Parking orbit insertion'},
+  {label:'TLI BURN',t:25.23*3600,desc:'Trans-Lunar Injection'},
+  {label:'DEEP SPACE',t:30*3600,desc:'Beyond Earth orbit'},
+  {label:'LUNAR APPROACH',t:4.2*24*3600,desc:'Moon in sight'},
+  {label:'LUNAR FLYBY',t:5.2*24*3600,desc:'~7,600 km closest pass'},
+  {label:'MAX DISTANCE',t:6*24*3600,desc:'Record from Earth'},
+  {label:'RETURN BURN',t:6.5*24*3600,desc:'Homeward trajectory'},
+  {label:'REENTRY',t:9.8*24*3600,desc:'Atmospheric entry'},
+  {label:'SPLASHDOWN',t:10*24*3600,desc:'Pacific Ocean recovery'},
+];
+
+let stateVectors=[];let craftImg=null;let refreshCD=30;
+let parallaxX=0,parallaxY=0,W=0,H=0,dpr=1,moonCloseAngle=0;
+
+window.addEventListener('mousemove',e=>{parallaxX=(e.clientX/window.innerWidth-.5)*2;parallaxY=(e.clientY/window.innerHeight-.5)*2;});
+function toggleFS(){const el=document.getElementById('wrap');if(!document.fullscreenElement)el.requestFullscreen&&el.requestFullscreen();else document.exitFullscreen&&document.exitFullscreen();}
+
+function fkm(k){if(k>=1e6)return(k/1e6).toFixed(2)+'M km';if(k>=1e5)return(k/1e3).toFixed(1)+'k km';return Math.round(k).toLocaleString('en-US')+' km';}
+function fkms(v){return v.toFixed(2)+' km/s';}
+function fmet(s){s=Math.max(0,Math.floor(s));const d=Math.floor(s/86400),h=Math.floor((s%86400)/3600),m=Math.floor((s%3600)/60),sc=s%60;if(d>0)return`${d}d ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;return`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;}
+function fRemain(s){const l=Math.max(0,DUR-s),d=Math.floor(l/86400),h=Math.floor((l%86400)/3600);return`${d}d ${h}h left`;}
+function getMoonPos(t){const dt=(t-new Date('2000-01-01T12:00:00Z'))/1000,a=(dt/MOON_PERIOD)*2*Math.PI;return{x:MOON_A*Math.cos(a),y:MOON_A*Math.sin(a)};}
+function lerp(a,b,t){return a+(b-a)*t;}
+function getPhase(ed,md){if(ed<20000)return'Earth Orbit';if(ed<150000&&md>80000)return'Outbound to Moon';if(md<80000&&md>20000)return'Lunar Approach';if(md<20000)return'Lunar Flyby';if(ed<300000&&md>50000)return'Return to Earth';return'Deep Space Transit';}
+
+function buildPhysics(){
+  const vecs=[],t0=LAUNCH.getTime();
+  for(let ms=0;ms<=DUR*1000;ms+=120000){
+    const t=new Date(t0+ms),frac=ms/(DUR*1000),moon=getMoonPos(t);let x,y,vx=0,vy=0;
+    if(frac<0.04){const a=frac/0.04*3*Math.PI,r=6563+frac*30000;x=r*Math.cos(a);y=r*Math.sin(a);vx=-Math.sqrt(398600/r)*Math.sin(a);vy=Math.sqrt(398600/r)*Math.cos(a);} 
+    else if(frac<0.08){const tf=(frac-.04)/.04,r=36000+tf*50000,a=3*Math.PI+tf*.8;x=r*Math.cos(a);y=r*Math.sin(a);vx=8-tf*5;vy=2;} 
+    else if(frac<0.44){const tf=(frac-.08)/.36,e=tf*tf*(3-2*tf);x=lerp(80000*Math.cos(4.6),moon.x*.92,e);y=lerp(80000*Math.sin(4.6),moon.y*.92,e);vx=lerp(3.5,1,tf);vy=vx*.3;} 
+    else if(frac<0.58){const tf=(frac-.44)/.14,a=Math.PI+tf*1.6*Math.PI,r=6000+15000*Math.sin(tf*Math.PI);x=moon.x+r*Math.cos(a);y=moon.y+r*Math.sin(a);const sp=2.2+tf*.3;vx=-sp*Math.sin(a);vy=sp*Math.cos(a);} 
+    else{const tf=(frac-.58)/.42,e=tf*tf*(3-2*tf),mn=getMoonPos(t),sx=mn.x+4000*Math.cos(4.712),sy=mn.y+4000*Math.sin(4.712);x=lerp(sx,0,e);y=lerp(sy,0,e);const sp=lerp(1,11,tf),l=Math.sqrt(x*x+y*y)||1;vx=-sp*(x/l);vy=-sp*(y/l);} 
+    vecs.push({t,x,y,z:0,vx,vy,vz:0});
+  }
+  return vecs;
+}
+
+function parseOEM(text){const lines=text.split('\n'),vecs=[];let inData=false;for(const raw of lines){const l=raw.trim();if(l==='DATA_START'){inData=true;continue;}if(l==='DATA_STOP'){inData=false;continue;}if(!inData||!l)continue;const p=l.split(/\s+/);if(p.length>=7){const t=new Date(p[0]);if(!isNaN(t))vecs.push({t,x:+p[1],y:+p[2],z:+p[3],vx:+p[4],vy:+p[5],vz:+p[6]});}}return vecs;}
+
+function interpolate(vecs,t){if(!vecs.length)return null;const ts=t.getTime();if(ts<=vecs[0].t.getTime())return vecs[0];if(ts>=vecs[vecs.length-1].t.getTime())return vecs[vecs.length-1];let lo=0,hi=vecs.length-1;while(hi-lo>1){const mid=(lo+hi)>>1;if(vecs[mid].t.getTime()<=ts)lo=mid;else hi=mid;}const a=vecs[lo],b=vecs[hi],f=(ts-a.t.getTime())/(b.t.getTime()-a.t.getTime());return{x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,z:(a.z||0)+((b.z||0)-(a.z||0))*f,vx:a.vx+(b.vx-a.vx)*f,vy:a.vy+(b.vy-a.vy)*f,vz:(a.vz||0)+((b.vz||0)-(a.vz||0))*f,t};}
+
+function renderTimeline(elSec){
+  const tl=document.getElementById('timeline');tl.innerHTML='';
+  for(let i=0;i<MILESTONES.length;i++){
+    const ms=MILESTONES[i],next=MILESTONES[i+1],done=elSec>ms.t,active=done&&(!next||elSec<next.t);
+    const item=document.createElement('div');
+    item.className='tl-item'+(done?' done':'')+(active?' active':'');
+    item.innerHTML=`<div class="tl-dot"></div><div><div class="tl-name">${ms.label}</div><div class="tl-desc">${ms.desc}</div></div>`;
+    tl.appendChild(item);
+  }
+}
+
+const bgC=document.getElementById('bgC'),bgCtx=bgC.getContext('2d');
+function buildBG(){
+  bgC.width=Math.round(W*dpr);bgC.height=Math.round(H*dpr);bgC.style.width=W+'px';bgC.style.height=H+'px';
+  bgCtx.setTransform(dpr,0,0,dpr,0,0);bgCtx.fillStyle='#000';bgCtx.fillRect(0,0,W,H);
+  for(let i=0;i<6;i++){const gx=W*(.1+i*.16),gy=H*(.25+Math.sin(i*1.1)*.18);const gr=bgCtx.createRadialGradient(gx,gy,0,gx,gy,W*.28);gr.addColorStop(0,`rgba(${30+i*8},${18+i*5},${48+i*10},0.2)`);gr.addColorStop(1,'transparent');bgCtx.fillStyle=gr;bgCtx.fillRect(0,0,W,H);}
+  const nc=bgCtx.createRadialGradient(W*.5,H*.5,0,W*.5,H*.5,W*.45);nc.addColorStop(0,'rgba(55,22,4,0.07)');nc.addColorStop(1,'transparent');bgCtx.fillStyle=nc;bgCtx.fillRect(0,0,W,H);
+  for(let layer=0;layer<3;layer++){const count=[900,350,100][layer],maxR=[.7,1.3,2][layer],seed=layer*13000;for(let i=0;i<count;i++){const s=seed+i*9187,x=(Math.sin(s*.7)*.5+.5)*W,y=(Math.cos(s*1.13)*.5+.5)*H,r=((Math.sin(s*1.9)*.5+.5)*maxR)+.1,a=.1+((Math.cos(s*.37)*.5+.5)*.65);const warm=Math.sin(s*.23)>.6;bgCtx.globalAlpha=a;bgCtx.beginPath();bgCtx.arc(x,y,r,0,Math.PI*2);bgCtx.fillStyle=warm?`rgba(255,228,170,${a})`:`rgba(238,243,255,${a})`;bgCtx.fill();}}
+  bgCtx.globalAlpha=1;
+}
+
+const mainC=document.getElementById('c'),ctx=mainC.getContext('2d');
+
+function buildCraftImage(size){
+  const oc=document.createElement('canvas');oc.width=size;oc.height=size;const ox=oc.getContext('2d'),sc=size/64;
+  ox.save();ox.translate(size/2,size/2);ox.scale(sc,sc);
+  const eg=ox.createRadialGradient(0,14,0,0,14,10);eg.addColorStop(0,'rgba(255,140,40,0.55)');eg.addColorStop(1,'transparent');ox.fillStyle=eg;ox.beginPath();ox.arc(0,14,10,0,Math.PI*2);ox.fill();
+  ox.fillStyle='rgba(180,185,195,0.92)';ox.beginPath();ox.roundRect(-7,6,14,12,2);ox.fill();ox.strokeStyle='rgba(255,200,100,0.18)';ox.lineWidth=.5;ox.stroke();
+  ox.fillStyle='rgba(150,155,165,0.88)';ox.beginPath();ox.ellipse(0,4,8,3,0,0,Math.PI*2);ox.fill();
+  ox.fillStyle='rgba(215,220,230,0.95)';ox.beginPath();ox.moveTo(0,-18);ox.lineTo(9,4);ox.lineTo(-9,4);ox.closePath();ox.fill();ox.strokeStyle='rgba(255,200,100,0.22)';ox.lineWidth=.5;ox.stroke();
+  ox.fillStyle='rgba(255,218,130,0.82)';ox.beginPath();ox.arc(0,-10,3,0,Math.PI*2);ox.fill();ox.fillStyle='rgba(255,255,200,0.9)';ox.beginPath();ox.arc(-1,-11,1.2,0,Math.PI*2);ox.fill();
+  for(const side of[-1,1]){ox.fillStyle='rgba(22,58,138,0.92)';ox.beginPath();ox.roundRect(side>0?10:-22,0,12,6,1);ox.fill();ox.strokeStyle='rgba(255,200,80,0.28)';ox.lineWidth=.5;ox.stroke();for(let i=1;i<4;i++){ox.beginPath();ox.strokeStyle='rgba(100,150,255,0.28)';ox.lineWidth=.35;ox.moveTo((side>0?10:-22)+i*3,0);ox.lineTo((side>0?10:-22)+i*3,6);ox.stroke();}ox.beginPath();ox.moveTo(side>0?10:-22,3);ox.lineTo(side>0?22:-10,3);ox.stroke();}
+  ox.strokeStyle='rgba(220,210,175,0.68)';ox.lineWidth=1;ox.beginPath();ox.moveTo(-10,3);ox.lineTo(-6,3);ox.stroke();ox.beginPath();ox.moveTo(6,3);ox.lineTo(10,3);ox.stroke();
+  ox.restore();return oc;
+}
+
+const moonC=document.getElementById('moonCanvas'),moonCtx=moonC.getContext('2d');
+function drawMoonCloseup(altKm){
+  const s=moonC.parentElement.clientWidth||200;moonC.width=s*2;moonC.height=s*2;moonC.style.width=s+'px';moonC.style.height=s+'px';moonCtx.setTransform(2,0,0,2,0,0);moonCloseAngle+=.0004;
+  const sky=moonCtx.createLinearGradient(0,0,0,s);sky.addColorStop(0,'#000');sky.addColorStop(.4,'#040406');sky.addColorStop(1,'#08060000');moonCtx.fillStyle=sky;moonCtx.fillRect(0,0,s,s);
+  const ex=s*.72,ey=s*.14,er=s*.065;const eg=moonCtx.createRadialGradient(ex-er*.3,ey-er*.3,er*.05,ex,ey,er);eg.addColorStop(0,'#2b6070');eg.addColorStop(1,'#0e1f2c');moonCtx.beginPath();moonCtx.arc(ex,ey,er,0,Math.PI*2);moonCtx.fillStyle=eg;moonCtx.fill();moonCtx.strokeStyle='rgba(80,160,255,0.28)';moonCtx.lineWidth=er*.18;moonCtx.beginPath();moonCtx.arc(ex,ey,er+er*.09,0,Math.PI*2);moonCtx.stroke();
+  const hg=moonCtx.createLinearGradient(0,s*.5,0,s*.72);hg.addColorStop(0,'transparent');hg.addColorStop(.5,'rgba(170,150,110,0.07)');hg.addColorStop(1,'transparent');moonCtx.fillStyle=hg;moonCtx.fillRect(0,s*.48,s,s*.28);
+  const surf=moonCtx.createLinearGradient(0,s*.62,0,s);surf.addColorStop(0,'#38332e');surf.addColorStop(.35,'#28231e');surf.addColorStop(1,'#18130e');moonCtx.fillStyle=surf;moonCtx.fillRect(0,s*.66,s,s*.34);
+  for(const[cx,cy,cr] of[[.14,.73,.038],[.42,.79,.055],[.62,.71,.033],[.82,.76,.048],[.28,.83,.024],[.68,.86,.038],[.52,.69,.028]]){const px=((cx+moonCloseAngle*.28)%1.5-.25)*s;moonCtx.beginPath();moonCtx.ellipse(px,cy*s,cr*s,cr*s*.32,.08,0,Math.PI*2);moonCtx.fillStyle='rgba(18,16,12,0.55)';moonCtx.fill();moonCtx.strokeStyle='rgba(75,70,58,0.35)';moonCtx.lineWidth=.5;moonCtx.stroke();}
+  moonCtx.strokeStyle='rgba(55,50,42,0.28)';moonCtx.lineWidth=.5;for(let i=0;i<8;i++){const ly=s*(.68+i*.04);moonCtx.beginPath();moonCtx.moveTo(0,ly);moonCtx.lineTo(s,ly+Math.sin(i*1.4+moonCloseAngle)*1.8);moonCtx.stroke();}
+  if(altKm<50000){const craft=moonCtx.createRadialGradient(s*.5,s*.38,0,s*.5,s*.38,s*.09);craft.addColorStop(0,'rgba(255,200,100,0.14)');craft.addColorStop(1,'transparent');moonCtx.fillStyle=craft;moonCtx.fillRect(0,0,s,s*.6);moonCtx.fillStyle='rgba(255,218,140,0.82)';moonCtx.beginPath();moonCtx.arc(s*.5,s*.37,s*.011,0,Math.PI*2);moonCtx.fill();moonCtx.strokeStyle='rgba(255,200,100,0.38)';moonCtx.lineWidth=.5;moonCtx.beginPath();moonCtx.arc(s*.5,s*.37,s*.024,0,Math.PI*2);moonCtx.stroke();}
+  document.getElementById('moonAltVal').textContent=fkm(altKm);
+}
+
+function resize(){dpr=Math.min(window.devicePixelRatio||1,2);const wrap=document.getElementById('wrap');W=wrap.clientWidth;H=wrap.clientHeight;mainC.width=Math.round(W*dpr);mainC.height=Math.round(H*dpr);mainC.style.width=W+'px';mainC.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);buildBG();craftImg=buildCraftImage(Math.max(48,Math.round(Math.min(W,H)*.058)));}
+
+function w2s(x,y,sc,ox,oy){return{sx:ox+x*sc,sy:oy-y*sc};}
+function getScale(){const mn=getMoonPos(new Date());return Math.min(W,H)*.36/Math.sqrt(mn.x**2+mn.y**2);}
+
+function drawDistRings(scale,ox,oy){for(const[r,label] of[[100000,'100k km'],[200000,'200k km'],[384400,'Moon orbit']]){const pr=r*scale;ctx.beginPath();ctx.arc(ox,oy,pr,0,Math.PI*2);ctx.strokeStyle='rgba(255,180,80,0.04)';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle='rgba(255,180,80,0.14)';ctx.font=`${Math.max(8,W*.006)}px Georgia,serif`;ctx.textAlign='left';ctx.fillText(label,ox+pr+4,oy);}}
+
+function drawEarth(sx,sy){const r=Math.min(W,H)*.09;const ex=sx+parallaxX*3,ey=sy+parallaxY*2;const glow=ctx.createRadialGradient(ex,ey,r*.5,ex,ey,r*2.5);glow.addColorStop(0,'rgba(28,75,155,0.18)');glow.addColorStop(1,'transparent');ctx.fillStyle=glow;ctx.beginPath();ctx.arc(ex,ey,r*2.5,0,Math.PI*2);ctx.fill();const g=ctx.createRadialGradient(ex-r*.35,ey-r*.35,r*.05,ex,ey,r);g.addColorStop(0,'#2f6278');g.addColorStop(.5,'#1a3e52');g.addColorStop(1,'#07131c');ctx.beginPath();ctx.arc(ex,ey,r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();ctx.save();ctx.beginPath();ctx.arc(ex,ey,r,0,Math.PI*2);ctx.clip();const term=ctx.createLinearGradient(ex-r,ey,ex+r*.3,ey);term.addColorStop(0,'rgba(0,0,0,0.48)');term.addColorStop(.7,'transparent');ctx.fillStyle=term;ctx.fillRect(ex-r,ey-r,r*2,r*2);ctx.restore();ctx.fillStyle='rgba(32,108,52,0.44)';ctx.beginPath();ctx.ellipse(ex-r*.3,ey-r*.08,r*.28,r*.2,.3,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(ex+r*.22,ey+r*.12,r*.18,r*.26,-.35,0,Math.PI*2);ctx.fill();ctx.strokeStyle='rgba(80,155,255,0.2)';ctx.lineWidth=r*.2;ctx.beginPath();ctx.arc(ex,ey,r+r*.1,0,Math.PI*2);ctx.stroke();ctx.fillStyle='rgba(255,255,255,0.72)';ctx.font=`${Math.max(11,r*.18)}px Georgia,serif`;ctx.textAlign='center';ctx.fillText('Earth',ex,ey-r*1.24);}
+
+function drawMoon(sx,sy){const r=Math.min(W,H)*.034;const mx=sx+parallaxX*6,my=sy+parallaxY*4;const glow=ctx.createRadialGradient(mx,my,r*.4,mx,my,r*2.2);glow.addColorStop(0,'rgba(198,188,155,0.11)');glow.addColorStop(1,'transparent');ctx.fillStyle=glow;ctx.beginPath();ctx.arc(mx,my,r*2.2,0,Math.PI*2);ctx.fill();const mg=ctx.createRadialGradient(mx-r*.25,my-r*.25,r*.05,mx,my,r);mg.addColorStop(0,'#cec9b8');mg.addColorStop(.6,'#9e9c8e');mg.addColorStop(1,'#5c5a50');ctx.beginPath();ctx.arc(mx,my,r,0,Math.PI*2);ctx.fillStyle=mg;ctx.fill();ctx.save();ctx.beginPath();ctx.arc(mx,my,r,0,Math.PI*2);ctx.clip();const mt=ctx.createLinearGradient(mx-r,my,mx+r*.5,my);mt.addColorStop(0,'rgba(0,0,0,0.52)');mt.addColorStop(.82,'transparent');ctx.fillStyle=mt;ctx.fillRect(mx-r,my-r,r*2,r*2);ctx.restore();ctx.fillStyle='rgba(58,56,48,0.48)';for(const[dx,dy,rr] of[[-0.35,-0.2,.09],[0.2,-0.18,.07],[-.1,.22,.08],[0.3,.1,.05],[-.05,-.05,.04]]){ctx.beginPath();ctx.arc(mx+dx*r,my+dy*r,rr*r,0,Math.PI*2);ctx.fill();}ctx.fillStyle='rgba(255,255,255,0.62)';ctx.font=`${Math.max(11,r*.3)}px Georgia,serif`;ctx.textAlign='center';ctx.fillText('Moon',mx,my-r*1.38);}
+
+function drawTrail(vecs,now,scale,ox,oy){if(vecs.length<2)return;const nms=now.getTime();ctx.beginPath();let first=true;for(const v of vecs){const p=w2s(v.x,v.y,scale,ox,oy);if(p.sx<-500||p.sx>W+500||p.sy<-500||p.sy>H+500){first=true;continue;}if(first){ctx.moveTo(p.sx,p.sy);first=false;}else ctx.lineTo(p.sx,p.sy);}ctx.strokeStyle='rgba(255,180,80,0.07)';ctx.lineWidth=1;ctx.stroke();ctx.beginPath();first=true;for(const v of vecs){if(v.t.getTime()>nms)break;const p=w2s(v.x,v.y,scale,ox,oy);if(first){ctx.moveTo(p.sx,p.sy);first=false;}else ctx.lineTo(p.sx,p.sy);}ctx.strokeStyle='rgba(255,200,80,0.68)';ctx.lineWidth=Math.max(1.5,W*.002);ctx.shadowColor='rgba(255,160,40,0.38)';ctx.shadowBlur=9;ctx.stroke();ctx.shadowBlur=0;}
+
+function drawCraft(sx,sy,angle){if(!craftImg)return;const hw=craftImg.width/2,hh=craftImg.height/2;ctx.save();ctx.translate(sx+parallaxX*8,sy+parallaxY*5);ctx.rotate(angle);const exhaust=ctx.createRadialGradient(0,hh*.8,0,0,hh*.8,hh*1.2);exhaust.addColorStop(0,'rgba(255,130,35,0.22)');exhaust.addColorStop(1,'transparent');ctx.fillStyle=exhaust;ctx.beginPath();ctx.arc(0,hh*.8,hh*1.2,0,Math.PI*2);ctx.fill();ctx.shadowColor='rgba(255,200,100,0.48)';ctx.shadowBlur=hw*.9;ctx.drawImage(craftImg,-hw,-hh,craftImg.width,craftImg.height);ctx.shadowBlur=0;ctx.restore();}
+
+function render(){
+  const now=new Date(),el=Math.max(0,(now-LAUNCH)/1000),prog=Math.min(1,el/DUR);
+  ctx.clearRect(0,0,W,H);
+  ctx.drawImage(bgC,(parallaxX-1)*14,(parallaxY-1)*10,W+28,H+20,0,0,W,H);
+  const scale=getScale(),ox=W*.44+parallaxX*4,oy=H*.52+parallaxY*3;
+  drawDistRings(scale,ox,oy);drawEarth(ox,oy);
+  const mn=getMoonPos(now),ms=w2s(mn.x,mn.y,scale,ox,oy);
+  drawMoon(ms.sx,ms.sy);
+  let md=999999;
+  if(stateVectors.length>1){
+    const pos=interpolate(stateVectors,now);
+    if(pos){
+      drawTrail(stateVectors,now,scale,ox,oy);
+      const ps=w2s(pos.x,pos.y,scale,ox,oy);
+      let angle=Math.PI/2;const ni=interpolate(stateVectors,new Date(now.getTime()+60000));
+      if(ni){const dp=w2s(ni.x,ni.y,scale,ox,oy);angle=Math.atan2(dp.sy-ps.sy,dp.sx-ps.sx)+Math.PI/2;}
+      drawCraft(ps.sx,ps.sy,angle);
+      const ed=Math.sqrt(pos.x**2+pos.y**2+(pos.z||0)**2);
+      md=Math.sqrt((pos.x-mn.x)**2+(pos.y-mn.y)**2);
+      const vel=Math.sqrt(pos.vx**2+pos.vy**2+(pos.vz||0)**2);
+      document.getElementById('vMet').textContent=fmet(el);
+      document.getElementById('vPhase').textContent=getPhase(ed,md);
+      document.getElementById('vEd').textContent=fkm(ed);
+      document.getElementById('vMd').textContent=fkm(md);
+      document.getElementById('vVel').textContent=fkms(vel);
+    }
+  }else{
+    document.getElementById('vMet').textContent=fmet(el);
+    document.getElementById('vPhase').textContent='Loading...';
+  }
+  const moonPanel=document.getElementById('moonPanel');
+  moonPanel.classList.toggle('visible',md<80000);
+  if(md<80000)drawMoonCloseup(md);
+  document.getElementById('progFill').style.width=(prog*100)+'%';
+  document.getElementById('progPct').textContent=Math.round(prog*100);
+  document.getElementById('daysLeft').textContent=fRemain(el);
+  renderTimeline(el);
+  requestAnimationFrame(render);
+}
+
+async function loadOEM(){
+  const proxy='https://api.allorigins.win/get?url=';
+  for(const url of[
+    'https://www.nasa.gov/wp-content/uploads/2026/04/artemis-ii-ephemeris.txt',
+    'https://www.nasa.gov/wp-content/uploads/2026/04/Artemis_II_OEM.txt'
+  ]){
+    try{
+      const r=await fetch(proxy+encodeURIComponent(url),{signal:AbortSignal.timeout(8000)});
+      const d=await r.json();
+      const vecs=parseOEM(d.contents||'');
+      if(vecs.length>10){
+        stateVectors=vecs;
+        document.getElementById('vSrc').textContent=`NASA OEM LIVE · ${vecs.length} pts`;
+        document.getElementById('vSrc').style.color='rgba(255,220,100,0.65)';
+        return true;
+      }
+    }catch(e){}
+  }
+  return false;
+}
+
+function startCountdown(){
+  refreshCD=30;
+  document.getElementById('cntDown').textContent=refreshCD;
+  const tick=setInterval(()=>{
+    refreshCD--;
+    document.getElementById('cntDown').textContent=refreshCD;
+    if(refreshCD<=0){
+      clearInterval(tick);
+      loadOEM().then(()=>startCountdown());
+    }
+  },1000);
+}
+
+function setupYouTubeFallback(){
+  setTimeout(()=>{
+    const feedSub=document.getElementById('feedSub');
+    if(feedSub){
+      feedSub.innerHTML=`NASA's Artemis II Live Mission Coverage (Official Broadcast) · <a href="https://www.youtube.com/watch?v=6RwfNBtepa4" target="_blank" rel="noopener noreferrer">Open on YouTube ↗</a>`;
+    }
+  },4000);
+}
+
+async function init(){
+  resize();
+  render();
+  stateVectors=buildPhysics();
+  const ok=await loadOEM();
+  if(!ok)document.getElementById('vSrc').textContent='PHYSICS MODEL · NASA OEM PENDING';
+  startCountdown();
+  setupYouTubeFallback();
+}
+
+const ro=new ResizeObserver(()=>resize());
+ro.observe(document.getElementById('wrap'));
+window.addEventListener('resize',resize);
+init();
+</script>
+</body>
+</html>
