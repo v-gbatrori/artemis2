@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Artemis II Tracker</title>
+<title>Artemis II · Auto Live Tracker</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -32,16 +32,14 @@
 .mission-title{font-family:'Orbitron',sans-serif;font-size:15px;font-weight:900;color:var(--c1);letter-spacing:0.28em;text-shadow:0 0 18px rgba(0,255,204,0.45)}
 .mission-sub{font-size:8px;color:rgba(0,255,204,0.38);letter-spacing:0.18em;text-align:center;margin-top:1px}
 .badge{background:rgba(255,0,0,0.12);border:1px solid rgba(255,0,0,0.35);border-radius:2px;padding:2px 8px;font-size:8px;color:#ff4444;letter-spacing:0.15em;display:flex;align-items:center;gap:5px}
-.left-col{display:flex;flex-direction:column;gap:9px}
-.right-col{display:flex;flex-direction:column;gap:9px}
-.center-col{display:flex;flex-direction:column;gap:9px}
+.left-col,.right-col,.center-col{display:flex;flex-direction:column;gap:9px}
 .map-area{flex:1;background:rgba(0,8,18,0.95);border:1px solid var(--border);border-radius:3px;position:relative;overflow:hidden;min-height:320px}
 .map-area canvas{width:100%;height:100%;display:block}
 .prog-wrap{padding:5px 9px;background:rgba(0,20,35,0.88);border:1px solid var(--border);border-radius:3px;position:relative}
 .prog-wrap::before{content:'';position:absolute;top:-1px;left:12px;right:12px;height:1px;background:linear-gradient(90deg,transparent,var(--c1),transparent)}
 .prog-labels{display:flex;justify-content:space-between;font-size:8px;color:rgba(0,255,204,0.4);margin-bottom:4px}
 .prog-track{height:2px;background:rgba(0,255,204,0.07);border-radius:1px}
-.prog-fill{height:100%;border-radius:1px;transition:width 1s;background:linear-gradient(90deg,#00ffcc,#ffcc00);position:relative}
+.prog-fill{height:100%;border-radius:1px;transition:width .5s;background:linear-gradient(90deg,#00ffcc,#ffcc00);position:relative}
 .prog-fill::after{content:'';position:absolute;right:-3px;top:-4px;width:8px;height:8px;border:1px solid #ffcc00;transform:rotate(45deg);background:#ffcc00;box-shadow:0 0 6px #ffcc00}
 .tl-item{display:flex;align-items:flex-start;gap:7px;padding:3px 0;opacity:0.28;transition:opacity .5s}
 .tl-item.done{opacity:0.52}
@@ -66,6 +64,9 @@
 .sys-fill{height:100%;border-radius:1px}
 .sys-val{font-size:9px;color:var(--c1);min-width:36px;text-align:right}
 .src-lbl{font-size:7px;color:rgba(0,255,204,0.22);letter-spacing:0.1em;text-align:center;margin-top:5px}
+.status-row{display:flex;justify-content:space-between;gap:8px;margin-top:6px}
+.status-pill{font-size:7px;padding:3px 6px;border:1px solid rgba(0,255,204,0.16);color:rgba(255,255,255,.8);background:rgba(0,255,204,.04)}
+@media (max-width:1100px){.hud-inner{grid-template-columns:1fr;}.top-bar{position:relative}.left-col,.center-col,.right-col{grid-column:1}}
 </style>
 </head>
 <body>
@@ -80,7 +81,7 @@
 <div class="top-bar">
   <div>
     <div class="mission-title">ARTEMIS II · ORION</div>
-    <div class="mission-sub">ONBOARD NAVIGATION DISPLAY · REAL-TIME TRACKING</div>
+    <div class="mission-sub">ONBOARD NAVIGATION DISPLAY · AUTO LIVE TRACKING</div>
   </div>
   <div class="badge"><span class="blink" style="width:6px;height:6px;background:#ff3333;border-radius:50%;display:inline-block"></span>LIVE</div>
 </div>
@@ -88,7 +89,6 @@
 <div class="hud-inner" style="padding-top:48px">
 
   <div class="left-col">
-
     <div class="yt-wrap">
       <div class="yt-header">
         <span class="blink" style="width:6px;height:6px;background:#ff3333;border-radius:50%;display:inline-block;flex:none"></span>
@@ -110,6 +110,10 @@
       <div class="ptitle">Navigation</div>
       <div class="met-big" id="metDisplay">00:00:00</div>
       <div style="font-size:7px;color:rgba(0,255,204,0.3);text-align:center;margin-bottom:3px;letter-spacing:0.15em">MISSION ELAPSED TIME</div>
+      <div class="status-row">
+        <div class="status-pill" id="sourceBadge">SOURCE · MODEL</div>
+        <div class="status-pill" id="updateBadge">UPDATED · --</div>
+      </div>
       <div class="divider"></div>
       <div class="dr"><span class="dl">EARTH DIST.</span><span class="dv" id="vEd">—</span></div>
       <div class="dr"><span class="dl">MOON DIST.</span><span class="dv yw" id="vMd">—</span></div>
@@ -130,11 +134,9 @@
         <div class="crew-card"><div class="crew-role">MS-2</div><div class="crew-name">Hansen</div></div>
       </div>
     </div>
-
   </div>
 
   <div class="center-col">
-
     <div class="panel" style="text-align:center;padding:8px 9px">
       <div class="phase-big" id="phaseBig">INITIALIZING</div>
       <div class="phase-desc" id="phaseDesc">Loading trajectory data...</div>
@@ -154,11 +156,9 @@
         <div class="prog-fill" id="progFill" style="width:0%"></div>
       </div>
     </div>
-
   </div>
 
   <div class="right-col">
-
     <div class="panel">
       <div class="ptitle">Systems Status</div>
       <div class="sys-row"><span class="dl" style="min-width:42px">O₂ SUPPLY</span><div class="sys-bar"><div class="sys-fill" style="width:98%;background:#00ffcc"></div></div><span class="sys-val">98.4%</span></div>
@@ -183,9 +183,8 @@
       <div class="ptitle">External Links</div>
       <a href="https://www.nasa.gov/trackartemis" target="_blank" style="display:block;background:rgba(0,170,255,0.07);border:1px solid rgba(0,170,255,0.2);border-radius:2px;padding:5px 8px;text-align:center;text-decoration:none;color:#00aaff;font-size:8px;letter-spacing:0.1em;margin-bottom:5px">NASA AROW TRACKER ↗</a>
       <a href="https://www.youtube.com/watch?v=m3kR2KK8TEs" target="_blank" style="display:block;background:rgba(255,0,0,0.07);border:1px solid rgba(255,0,0,0.2);border-radius:2px;padding:5px 8px;text-align:center;text-decoration:none;color:#ff4444;font-size:8px;letter-spacing:0.1em">NASA TV YOUTUBE ↗</a>
-      <div class="src-lbl" id="srcBadge">PHYSICS MODEL ACTIVE</div>
+      <div class="src-lbl" id="srcBadge">AUTO TELEMETRY ACTIVE</div>
     </div>
-
   </div>
 
 </div>
@@ -257,7 +256,8 @@ const stateVectors=buildPhysics();
 const canvas=document.getElementById('mapCanvas');
 const ctx=canvas.getContext('2d');
 let starField=null,animFrame=0,lastW=0;
-let liveTelemetry=null,lastFetchAttempt=0,liveSourceLabel='Model';
+let liveTelemetry=null,lastFetchAttempt=0,liveSourceLabel='Model',lastUpdateText='--';
+let cachedPathState=null;
 
 function buildStars(w,h){const s=[];for(let i=0;i<450;i++){const b=Math.random();s.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.3+0.2,a:0.1+b*0.7,warm:Math.random()>.72});}return s;}
 
@@ -273,12 +273,13 @@ async function fetchLiveTelemetry(nowTs){
   if(nowTs-lastFetchAttempt<LIVE_FETCH_MS)return;
   lastFetchAttempt=nowTs;
   try{
-    const res=await fetch(LIVE_DATA_URL,{cache:'no-store'});
+    const res=await fetch(LIVE_DATA_URL+'?t='+nowTs,{cache:'no-store'});
     if(!res.ok)throw new Error('HTTP '+res.status);
     const json=await res.json();
     if(json && (json.position || Number.isFinite(json.progress) || Number.isFinite(json.distanceFromEarthKm))){
       liveTelemetry=json;
       liveSourceLabel=json.sourceLabel||'Telemetry';
+      lastUpdateText=new Date().toLocaleTimeString('en-US');
     }
   }catch(err){
     liveTelemetry=null;
@@ -290,10 +291,8 @@ function telemetryFromLive(now){
   if(!liveTelemetry)return null;
   const moon=getMoonPos(now);
   let x=null,y=null,vx=0,vy=0;
-
   if(liveTelemetry.position && Number.isFinite(liveTelemetry.position.xKm) && Number.isFinite(liveTelemetry.position.yKm)){
-    x=liveTelemetry.position.xKm;
-    y=liveTelemetry.position.yKm;
+    x=liveTelemetry.position.xKm;y=liveTelemetry.position.yKm;
     vx=Number.isFinite(liveTelemetry.velocity?.xKms)?liveTelemetry.velocity.xKms:0;
     vy=Number.isFinite(liveTelemetry.velocity?.yKms)?liveTelemetry.velocity.yKms:0;
   }else if(Number.isFinite(liveTelemetry.progress)){
@@ -301,25 +300,13 @@ function telemetryFromLive(now){
     const modelPos=interpolate(stateVectors,new Date(LAUNCH.getTime()+p*DUR*1000));
     if(modelPos){x=modelPos.x;y=modelPos.y;vx=modelPos.vx;vy=modelPos.vy;}
   }else if(Number.isFinite(liveTelemetry.distanceFromEarthKm) && Number.isFinite(liveTelemetry.distanceToMoonKm)){
-    const ed=liveTelemetry.distanceFromEarthKm;
-    const md=liveTelemetry.distanceToMoonKm;
+    const ed=liveTelemetry.distanceFromEarthKm, md=liveTelemetry.distanceToMoonKm;
     const total=Math.hypot(moon.x,moon.y)||1;
     const ux=moon.x/total, uy=moon.y/total;
-    if(Math.abs((ed+md)-total)<80000){
-      x=ux*ed;y=uy*ed;
-    }else{
-      const frac=Math.max(0,Math.min(1,ed/(ed+md||1)));
-      x=moon.x+(0-moon.x)*frac;
-      y=moon.y+(0-moon.y)*frac;
-    }
-    if(Number.isFinite(liveTelemetry.speedKms)){
-      vx=liveTelemetry.speedKms*ux;
-      vy=liveTelemetry.speedKms*uy;
-    }
+    if(Math.abs((ed+md)-total)<80000){x=ux*ed;y=uy*ed;}else{const frac=Math.max(0,Math.min(1,ed/(ed+md||1)));x=moon.x+(0-moon.x)*frac;y=moon.y+(0-moon.y)*frac;}
+    if(Number.isFinite(liveTelemetry.speedKms)){vx=liveTelemetry.speedKms*ux;vy=liveTelemetry.speedKms*uy;}
   }
-
   if(x===null||y===null)return null;
-
   return {
     x,y,vx,vy,
     earthDistanceKm:Number.isFinite(liveTelemetry.distanceFromEarthKm)?liveTelemetry.distanceFromEarthKm:Math.hypot(x,y),
@@ -328,6 +315,60 @@ function telemetryFromLive(now){
     source:liveSourceLabel,
     progress:Number.isFinite(liveTelemetry.progress)?Math.max(0,Math.min(1,liveTelemetry.progress)):null
   };
+}
+
+function getCurrentPos(now){
+  const livePos=telemetryFromLive(now);
+  return livePos?{...livePos,t:now}:interpolate(stateVectors,now);
+}
+
+function buildDynamicPath(now,pos){
+  const moon=getMoonPos(now);
+  const points=[];
+  const totalSteps=220;
+  const liveProgress=pos&&Number.isFinite(pos.progress)?pos.progress:null;
+  const progress=liveProgress!==null?liveProgress:Math.max(0,Math.min(1,(now-LAUNCH)/1000/DUR));
+
+  for(let i=0;i<=totalSteps;i++){
+    const t=i/totalSteps;
+    let p=interpolate(stateVectors,new Date(LAUNCH.getTime()+t*DUR*1000));
+    if(!p) continue;
+    points.push({x:p.x,y:p.y,done:t<=progress});
+  }
+
+  if(pos && Number.isFinite(pos.x) && Number.isFinite(pos.y)){
+    const idx=Math.max(0,Math.min(totalSteps,Math.round(progress*totalSteps)));
+    if(points[idx]) points[idx]={x:pos.x,y:pos.y,done:true};
+  }
+
+  return {points,progress,moon};
+}
+
+function drawSegmentedPath(points,scale,ox,oy){
+  if(!points.length)return;
+  ctx.beginPath();
+  let first=true;
+  for(const p of points){
+    const sp=w2s(p.x,p.y,scale,ox,oy);
+    if(first){ctx.moveTo(sp.sx,sp.sy);first=false;}else ctx.lineTo(sp.sx,sp.sy);
+  }
+  ctx.strokeStyle='rgba(0,255,204,0.055)';
+  ctx.lineWidth=1;
+  ctx.stroke();
+
+  ctx.beginPath();
+  first=true;
+  for(const p of points){
+    if(!p.done) break;
+    const sp=w2s(p.x,p.y,scale,ox,oy);
+    if(first){ctx.moveTo(sp.sx,sp.sy);first=false;}else ctx.lineTo(sp.sx,sp.sy);
+  }
+  ctx.strokeStyle='rgba(0,255,204,0.82)';
+  ctx.lineWidth=1.7;
+  ctx.shadowColor='rgba(0,255,204,0.35)';
+  ctx.shadowBlur=8;
+  ctx.stroke();
+  ctx.shadowBlur=0;
 }
 
 function drawOrion(x,y,angle){
@@ -463,26 +504,16 @@ function drawMap(now){
   ctx.beginPath();ctx.arc(ms.sx,ms.sy,moonR,0,Math.PI*2);ctx.fillStyle=mg;ctx.fill();
   ctx.fillStyle='rgba(255,204,0,0.75)';ctx.font='bold 9px Share Tech Mono,monospace';ctx.textAlign='center';ctx.fillText('MOON',ms.sx,ms.sy-moonR*1.55);
 
-  ctx.beginPath();let first=true;
-  for(const v of stateVectors){const p=w2s(v.x,v.y,scale,ox,oy);if(first){ctx.moveTo(p.sx,p.sy);first=false;}else ctx.lineTo(p.sx,p.sy);}
-  ctx.strokeStyle='rgba(0,255,204,0.055)';ctx.lineWidth=1;ctx.stroke();
+  const currentPos=getCurrentPos(now);
+  const pathState=buildDynamicPath(now,currentPos||interpolate(stateVectors,now));
+  cachedPathState=pathState;
+  drawSegmentedPath(pathState.points,scale,ox,oy);
 
-  const nms=now.getTime();
-  ctx.beginPath();first=true;
-  for(const v of stateVectors){if(v.t.getTime()>nms)break;const p=w2s(v.x,v.y,scale,ox,oy);if(first){ctx.moveTo(p.sx,p.sy);first=false;}else ctx.lineTo(p.sx,p.sy);}
-  ctx.strokeStyle='rgba(0,255,204,0.72)';ctx.lineWidth=1.5;ctx.stroke();
-
-  const livePos=telemetryFromLive(now);
-  const pos=livePos?{x:livePos.x,y:livePos.y,vx:livePos.vx,vy:livePos.vy,t:now}:interpolate(stateVectors,now);
-
-  if(pos){
-    const ps=w2s(pos.x,pos.y,scale,ox,oy);
-    const glowG=ctx.createRadialGradient(ps.sx,ps.sy,0,ps.sx,ps.sy,16);
-    glowG.addColorStop(0,'rgba(0,255,204,0.3)');glowG.addColorStop(1,'transparent');
-    ctx.fillStyle=glowG;ctx.beginPath();ctx.arc(ps.sx,ps.sy,16,0,Math.PI*2);ctx.fill();
+  if(currentPos){
+    const ps=w2s(currentPos.x,currentPos.y,scale,ox,oy);
     let angle=0;
-    const ni=interpolate(stateVectors,new Date(nms+60000));
-    if(ni){const dp=w2s(ni.x,ni.y,scale,ox,oy);angle=Math.atan2(dp.sy-ps.sy,dp.sx-ps.sx);}
+    const futurePoint=interpolate(stateVectors,new Date(now.getTime()+60000));
+    if(futurePoint){const fp=w2s(futurePoint.x,futurePoint.y,scale,ox,oy);angle=Math.atan2(fp.sy-ps.sy,fp.sx-ps.sx);}
     drawOrion(ps.sx,ps.sy,angle);
     ctx.fillStyle='rgba(0,255,204,0.55)';ctx.font='8px Share Tech Mono,monospace';ctx.textAlign='left';
     ctx.fillText('◀ ORION',ps.sx+22,ps.sy+3);
@@ -534,6 +565,8 @@ function tick(){
     document.getElementById('vPerigee').textContent=fkm(ed*0.98);
     document.getElementById('vPeriod').textContent=(2*Math.PI*ed/vel/3600).toFixed(1)+'h';
     document.getElementById('srcBadge').textContent=(livePos?livePos.source:'PHYSICS MODEL').toUpperCase()+' ACTIVE';
+    document.getElementById('sourceBadge').textContent='SOURCE · '+(livePos?livePos.source.toUpperCase():'MODEL');
+    document.getElementById('updateBadge').textContent='UPDATED · '+lastUpdateText;
   }
 
   const effectiveProg=livePos&&livePos.progress!==null?livePos.progress:prog;
