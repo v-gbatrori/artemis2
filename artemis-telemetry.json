@@ -1,7 +1,10 @@
 {
-  "sourceLabel": "SIM",
+  "sourceLabel": "BACKEND SAMPLE",
+  "updatedAt": "2026-04-01T22:35:00Z",
   "progress": 0.7,
-  "distanceFromEarthKm": 145000,
-  "distanceToMoonKm": 240000,
+  "position": {"xKm": 145000, "yKm": 82000, "zKm": 0},
+  "velocity": {"xKms": 1.82, "yKms": 2.69, "zKms": 0},
+  "distanceFromEarthKm": 166597,
+  "distanceToMoonKm": 238421,
   "speedKms": 3.25
 }
