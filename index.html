@@ -3,22 +3,30 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Artemis II · Mission Tracker V4</title>
+<title>Artemis II · Mission Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --c1:#7ee8ff;--c2:#b8d8ff;--c3:#ff8c2a;--c4:#ffd060;--c5:#4fc3f7;
-  --ok:#6dffd3;--bg:#00060f;--border:rgba(100,200,255,.14);
-  --warn:#ffb347;--bad:#ff6b6b;
+  --c1:#d4aaff;
+  --c2:#b088ee;
+  --c3:#ff9a5c;
+  --c4:#ffe080;
+  --c5:#88ccff;
+  --ok:#88ffcc;
+  --warn:#ffb347;
+  --bad:#ff6b6b;
+  --bg:#04000f;
+  --border:rgba(180,100,255,.14);
+  --border2:rgba(140,80,220,.10);
 }
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg)}
 body{font-family:'Share Tech Mono',monospace;color:var(--c1)}
 body::after{
   content:'';
   position:fixed;inset:0;pointer-events:none;z-index:9999;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(80,180,255,.007) 2px,rgba(80,180,255,.007) 4px)
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(160,80,255,.006) 2px,rgba(160,80,255,.006) 4px);
 }
 
 #scene{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000}
@@ -26,575 +34,334 @@ body::after{
 .aspect-box{position:relative;width:100vw;height:100vh;overflow:hidden}
 #bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0}
 #front{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:30;pointer-events:none}
-.window-viewport{position:absolute;left:0;top:0;width:100px;height:100px;overflow:hidden;z-index:10;border-radius:2.2vw}
+.window-viewport{position:absolute;left:0;top:0;width:100px;height:100px;overflow:hidden;z-index:10;border-radius:2vw}
 
 #hud{
   position:absolute;inset:0;
   background:
-    linear-gradient(180deg,rgba(0,8,22,.92),rgba(0,5,14,.95)),
-    repeating-linear-gradient(0deg,transparent 0 2px,rgba(80,180,255,.007) 2px 4px);
-  border:1px solid rgba(80,180,255,.16);
-  border-radius:1.9vw;
+    linear-gradient(180deg,rgba(10,2,28,.20) 0%,rgba(5,1,18,.28) 100%),
+    repeating-linear-gradient(0deg,transparent 0 2px,rgba(160,80,255,.010) 2px 4px);
+  border:1px solid rgba(160,80,255,.16);
+  border-radius:1.8vw;
   overflow:hidden;
+  box-shadow:
+    inset 0 0 30px rgba(180,80,255,.06),
+    0 0 30px rgba(140,40,255,.05);
 }
 #hud::before,#hud::after{
   content:'';
-  position:absolute;left:4%;right:4%;height:1px;z-index:2;
-  background:linear-gradient(90deg,transparent,rgba(80,180,255,.4),transparent)
+  position:absolute;left:3%;right:3%;height:1px;z-index:2;
+  background:linear-gradient(90deg,transparent,rgba(180,80,255,.45),transparent);
 }
 #hud::before{top:0}
 #hud::after{bottom:0}
 
-.hud-vignette{
+@keyframes holoFlicker{
+  0%,95%,100%{opacity:1}
+  96%{opacity:.94}
+  97%{opacity:.98}
+  98%{opacity:.92}
+  99%{opacity:.97}
+}
+#hud{animation:holoFlicker 6s infinite}
+
+.holo-scan{
+  position:absolute;inset:0;pointer-events:none;z-index:25;
+  background:linear-gradient(180deg,
+    transparent 0%,
+    rgba(180,80,255,.03) 48%,
+    rgba(200,100,255,.06) 50%,
+    rgba(180,80,255,.03) 52%,
+    transparent 100%);
+  animation:holoSweep 4s linear infinite;
+}
+@keyframes holoSweep{
+  0%{transform:translateY(-100%)}
+  100%{transform:translateY(100%)}
+}
+.holo-lines{
   position:absolute;inset:0;pointer-events:none;z-index:24;
-  background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,.22) 100%)
+  background:repeating-linear-gradient(0deg,
+    transparent,transparent 3px,
+    rgba(160,60,255,.025) 3px,rgba(160,60,255,.025) 4px);
 }
-.glass-layer{
-  position:absolute;inset:0;pointer-events:none;z-index:27;mix-blend-mode:screen;
-  animation:glassGlitch 7s infinite steps(1)
+.holo-edge{
+  position:absolute;inset:0;pointer-events:none;z-index:26;border-radius:1.8vw;
+  box-shadow:
+    inset 0 0 40px rgba(160,60,255,.06),
+    inset 0 2px 0 rgba(220,140,255,.08),
+    inset 0 -2px 0 rgba(160,60,255,.06),
+    0 0 60px rgba(140,40,255,.08);
 }
+.holo-corner{position:absolute;width:clamp(16px,2.2vw,36px);height:clamp(16px,2.2vw,36px);pointer-events:none;z-index:27}
+.holo-corner svg{width:100%;height:100%}
+.hc-tl{top:.4vw;left:.4vw}
+.hc-tr{top:.4vw;right:.4vw;transform:scaleX(-1)}
+.hc-bl{bottom:.4vw;left:.4vw;transform:scaleY(-1)}
+.hc-br{bottom:.4vw;right:.4vw;transform:scale(-1,-1)}
+
+.glass-layer{position:absolute;inset:0;pointer-events:none;z-index:27;mix-blend-mode:screen}
 .glass-sheen{
   position:absolute;inset:-8%;
   background:
-    linear-gradient(108deg,rgba(255,255,255,0) 12%,rgba(160,220,255,.04) 26%,rgba(255,255,255,.07) 31%,rgba(160,220,255,.02) 36%,rgba(255,255,255,0) 44%),
-    linear-gradient(72deg,rgba(255,255,255,0) 50%,rgba(120,200,255,.025) 58%,rgba(255,255,255,.04) 63%,rgba(255,255,255,0) 70%);
-  filter:blur(1px)
+    linear-gradient(108deg,rgba(255,255,255,0) 10%,rgba(200,150,255,.03) 24%,rgba(255,255,255,.05) 29%,rgba(200,150,255,.02) 34%,rgba(255,255,255,0) 42%);
+  filter:blur(1px);
 }
 .glass-glow{
   position:absolute;inset:0;
   background:
-    radial-gradient(circle at 18% 10%,rgba(120,210,255,.07),transparent 20%),
-    radial-gradient(circle at 84% 14%,rgba(120,210,255,.05),transparent 22%)
-}
-.glass-edge{
-  position:absolute;inset:0;border-radius:1.9vw;
-  box-shadow:
-    inset 0 1px 0 rgba(200,240,255,.07),
-    inset 0 -1px 0 rgba(80,180,255,.05),
-    inset 0 0 0 1px rgba(255,255,255,.02)
+    radial-gradient(circle at 20% 8%,rgba(180,100,255,.06),transparent 22%),
+    radial-gradient(circle at 80% 12%,rgba(180,100,255,.04),transparent 24%),
+    radial-gradient(circle at 50% 100%,rgba(120,40,200,.03),transparent 30%);
 }
 .edge-reflection{position:absolute;inset:0;pointer-events:none;z-index:28}
 .edge-reflection::before,.edge-reflection::after{
-  content:'';position:absolute;top:0;bottom:0;width:12%;filter:blur(18px)
+  content:'';position:absolute;top:0;bottom:0;width:10%;filter:blur(22px);
 }
-.edge-reflection::before{left:-2%;background:linear-gradient(90deg,rgba(80,180,255,.10),rgba(80,180,255,0))}
-.edge-reflection::after{right:-2%;background:linear-gradient(270deg,rgba(80,180,255,.10),rgba(80,180,255,0))}
-
-@keyframes glassGlitch{
-  0%,92%,100%{transform:translate(0,0);opacity:1}
-  93%{transform:translate(1px,0);opacity:.96}
-  94%{transform:translate(-1px,1px);opacity:.92}
-  95%{transform:translate(1px,-1px);opacity:.97}
-  96%{transform:translate(0,0);opacity:1}
-}
+.edge-reflection::before{left:-2%;background:linear-gradient(90deg,rgba(160,60,255,.09),transparent)}
+.edge-reflection::after{right:-2%;background:linear-gradient(270deg,rgba(160,60,255,.09),transparent)}
 
 #topBar{
-  position:absolute;left:0;right:0;top:0;height:8.2%;min-height:26px;
+  position:absolute;left:0;right:0;top:0;height:8%;min-height:24px;
   display:flex;align-items:center;justify-content:center;gap:1vw;
-  background:linear-gradient(180deg,rgba(0,6,18,.96) 65%,transparent);
-  border-bottom:1px solid rgba(80,180,255,.10);z-index:5
+  background:linear-gradient(180deg,rgba(8,2,22,.55) 60%,transparent);
+  border-bottom:1px solid rgba(160,60,255,.10);z-index:5;
 }
 .header-wrap{text-align:center}
 .mission-title{
-  font-family:'Orbitron',sans-serif;font-size:clamp(9px,1.15vw,24px);font-weight:900;
-  color:var(--c1);letter-spacing:.24em;white-space:nowrap;
-  text-shadow:0 0 16px rgba(100,200,255,.4),0 0 40px rgba(100,200,255,.15)
+  font-family:'Orbitron',sans-serif;font-size:clamp(9px,1.1vw,22px);font-weight:900;
+  color:var(--c1);letter-spacing:.26em;white-space:nowrap;
+  text-shadow:0 0 18px rgba(180,80,255,.45),0 0 50px rgba(160,60,255,.12);
 }
 .mission-sub{
-  margin-top:.06vw;font-size:clamp(4px,.33vw,8px);color:rgba(120,190,255,.32);
-  letter-spacing:.22em;white-space:nowrap
+  font-size:clamp(4px,.30vw,7px);color:rgba(180,120,255,.28);
+  letter-spacing:.24em;white-space:nowrap;margin-top:.05vw;
 }
 .live-badge{
-  display:flex;align-items:center;gap:.35vw;background:rgba(100,255,160,.08);
-  border:1px solid rgba(100,255,160,.22);border-radius:2px;padding:.14vw .48vw;
-  color:#8dffb0;font-size:clamp(4px,.36vw,8px);letter-spacing:.15em
+  display:flex;align-items:center;gap:.3vw;
+  background:rgba(180,80,255,.08);border:1px solid rgba(180,80,255,.20);
+  border-radius:2px;padding:.12vw .44vw;
+  color:#cc88ff;font-size:clamp(4px,.34vw,8px);letter-spacing:.15em;
+  box-shadow:0 0 10px rgba(160,60,255,.12);
 }
 .live-dot{
-  width:.34vw;height:.34vw;min-width:4px;min-height:4px;border-radius:50%;
-  background:#7affa8;box-shadow:0 0 7px #7affa8;animation:blink 1.2s infinite
+  width:.32vw;height:.32vw;min-width:4px;min-height:4px;
+  border-radius:50%;background:#cc88ff;box-shadow:0 0 8px #cc88ff;
+  animation:blink 1.2s infinite;
 }
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
 
 #main{
-  position:absolute;inset:9.2% 1.2% 1.3% 1.2%;
-  display:grid;grid-template-columns:24% 47% 29%;gap:.6vw;
-  min-height:0;z-index:6
+  position:absolute;inset:8.8% 1.1% 1.2% 1.1%;
+  display:grid;grid-template-columns:24% 47% 29%;
+  gap:.55vw;min-height:0;z-index:6;
 }
-.col{
-  display:flex;flex-direction:column;gap:.6vw;
-  min-width:0;min-height:0
-}
-#main > .col:nth-child(3){min-height:0}
-
+.col{display:flex;flex-direction:column;gap:.55vw;min-width:0;min-height:0}
 .col-right-scroll{
-  min-height:0;
-  overflow-y:auto;
-  overflow-x:hidden;
-  padding-right:.18vw;
-  scroll-behavior:smooth;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:thin;
-  scrollbar-color:rgba(80,180,255,.35) transparent;
-
-  display:flex;
-  flex-direction:column;
-  gap:.6vw;
-  align-items:stretch;
+  min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:.16vw;
+  display:flex;flex-direction:column;gap:.55vw;align-items:stretch;
+  scrollbar-width:thin;scrollbar-color:rgba(180,80,255,.35) transparent;
 }
-.col-right-scroll::-webkit-scrollbar{width:6px}
-.col-right-scroll::-webkit-scrollbar-track{background:transparent}
-.col-right-scroll::-webkit-scrollbar-thumb{
-  background:rgba(80,180,255,.28);
-  border-radius:10px;
-  box-shadow:0 0 8px rgba(80,180,255,.15)
-}
-.col-right-scroll::-webkit-scrollbar-thumb:hover{
-  background:rgba(110,210,255,.45)
-}
-.col-right-scroll .panel{
-  flex:0 0 auto;
-  min-height:auto;
-}
+.col-right-scroll::-webkit-scrollbar{width:5px}
+.col-right-scroll::-webkit-scrollbar-thumb{background:rgba(160,60,255,.30);border-radius:10px}
+.col-right-scroll::-webkit-scrollbar-thumb:hover{background:rgba(200,100,255,.50)}
+.col-right-scroll .panel{flex:0 0 auto;min-height:auto}
 
 .panel{
-  background:linear-gradient(160deg,rgba(5,20,45,.65),rgba(2,10,24,.80));
-  backdrop-filter:blur(3px);
+  background:linear-gradient(160deg,rgba(22,6,50,.10),rgba(10,2,28,.18));
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
   border:1px solid var(--border);
-  border-radius:.26vw;
-  padding:.48vw;
-  position:relative;
-  overflow:hidden;
+  border-radius:.24vw;padding:.46vw;
+  position:relative;overflow:hidden;
   box-shadow:
-    inset 0 1px 0 rgba(120,200,255,.06),
-    inset 0 0 18px rgba(60,150,255,.025),
-    0 0 12px rgba(0,0,0,.4)
+    inset 0 1px 0 rgba(200,120,255,.05),
+    inset 0 0 16px rgba(140,40,255,.02),
+    0 0 14px rgba(140,40,255,.03);
 }
 .panel::before{
-  content:'';
-  position:absolute;top:0;left:8%;right:8%;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(80,180,255,.38),transparent)
+  content:'';position:absolute;top:0;left:8%;right:8%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(180,80,255,.28),transparent);
 }
 .ptitle{
-  font-family:'Orbitron',sans-serif;
-  font-size:clamp(4px,.42vw,9px);
-  color:rgba(100,190,255,.46);
-  letter-spacing:.18em;
-  text-transform:uppercase;
-  display:flex;align-items:center;gap:.26vw;
-  margin-bottom:.32vw
+  font-family:'Orbitron',sans-serif;font-size:clamp(4px,.40vw,9px);
+  color:rgba(180,120,255,.46);letter-spacing:.18em;text-transform:uppercase;
+  display:flex;align-items:center;gap:.24vw;margin-bottom:.30vw;
 }
 .ptitle::before{
-  content:'';
-  width:.26vw;height:.26vw;min-width:4px;min-height:4px;
-  border:1px solid var(--c1);
-  transform:rotate(45deg);
-  flex:none
+  content:'';width:.24vw;height:.24vw;min-width:4px;min-height:4px;
+  border:1px solid var(--c1);transform:rotate(45deg);flex:none;
 }
 .divider{
   height:1px;
-  background:linear-gradient(90deg,transparent,rgba(80,180,255,.14),transparent);
-  margin:.36vw 0
+  background:linear-gradient(90deg,transparent,rgba(160,80,255,.12),transparent);
+  margin:.34vw 0;
 }
-.dr{
-  display:flex;align-items:baseline;justify-content:space-between;gap:.4vw;
-  margin:.20vw 0
-}
-.dl{
-  color:rgba(120,190,255,.36);
-  font-size:clamp(4px,.32vw,8px);
-  letter-spacing:.08em
-}
+.dr{display:flex;align-items:baseline;justify-content:space-between;gap:.38vw;margin:.18vw 0}
+.dl{color:rgba(180,130,255,.34);font-size:clamp(4px,.30vw,8px);letter-spacing:.08em}
 .dv{
-  font-family:'Orbitron',sans-serif;
-  font-size:clamp(7px,.88vw,19px);
-  color:#e8f4ff;
-  text-shadow:0 0 8px rgba(100,200,255,.3);
-  white-space:nowrap
+  font-family:'Orbitron',sans-serif;font-size:clamp(7px,.86vw,18px);
+  color:#f0e8ff;text-shadow:0 0 8px rgba(180,80,255,.20);white-space:nowrap;
 }
-.dv.or{color:var(--c3);text-shadow:0 0 8px rgba(255,140,42,.35)}
-.dv.yw{color:var(--c4);text-shadow:0 0 8px rgba(255,208,60,.35)}
-.dv.bl{color:var(--c5);text-shadow:0 0 8px rgba(79,195,247,.35)}
+.dv.or{color:var(--c3);text-shadow:0 0 8px rgba(255,154,92,.25)}
+.dv.yw{color:var(--c4);text-shadow:0 0 10px rgba(255,224,128,.28)}
+.dv.bl{color:var(--c5);text-shadow:0 0 8px rgba(136,204,255,.22)}
 
 .live-tile{
-  aspect-ratio:16/9;
-  background:#000813;
-  border:1px solid rgba(200,0,0,.22);
-  border-radius:.26vw;
-  overflow:hidden;
-  position:relative;
-  flex:none
+  aspect-ratio:16/9;background:rgba(4,0,14,.18);
+  border:1px solid rgba(200,80,80,.16);border-radius:.24vw;overflow:hidden;position:relative;flex:none;
+  backdrop-filter:blur(4px);
 }
 .live-head{
   position:absolute;top:0;left:0;right:0;
-  background:rgba(140,0,0,.88);color:#fff;
-  font-size:clamp(4px,.33vw,7.5px);letter-spacing:.15em;
-  padding:.26vw .42vw;display:flex;align-items:center;gap:.4vw;z-index:3
+  background:rgba(140,0,0,.65);color:#fff;
+  font-size:clamp(4px,.32vw,7.5px);letter-spacing:.15em;
+  padding:.24vw .40vw;display:flex;align-items:center;gap:.4vw;z-index:3;
 }
-#ytOverlay{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:.5vw;
-  background:radial-gradient(ellipse at center,rgba(0,10,30,.85) 0%,rgba(0,4,14,.97) 100%);
-  z-index:4;cursor:pointer;transition:background .2s
-}
-#ytOverlay:hover{background:radial-gradient(ellipse at center,rgba(0,20,50,.85) 0%,rgba(0,8,20,.97) 100%)}
-#ytOverlay.hidden{display:none}
-.yt-play-btn{
-  width:clamp(28px,4vw,56px);
-  height:clamp(28px,4vw,56px);
-  border-radius:50%;
-  border:2px solid rgba(255,80,80,.7);
-  background:rgba(200,0,0,.22);
-  display:flex;align-items:center;justify-content:center;
-  font-size:clamp(12px,1.6vw,24px);
-  color:rgba(255,120,120,.95);
-  transition:all .2s;
-  box-shadow:0 0 clamp(8px,1.2vw,20px) rgba(255,0,0,.25)
-}
-#ytOverlay:hover .yt-play-btn{
-  background:rgba(200,0,0,.45);
-  border-color:rgba(255,100,100,.9);
-  box-shadow:0 0 clamp(14px,2vw,32px) rgba(255,0,0,.45);
-  transform:scale(1.08)
-}
-.yt-play-label{
-  font-family:'Orbitron',sans-serif;
-  font-size:clamp(5px,.48vw,10px);
-  color:rgba(255,130,130,.7);
-  letter-spacing:.18em
-}
-.yt-auto-label{
-  font-size:clamp(4px,.32vw,7px);
-  color:rgba(100,180,255,.38);
-  letter-spacing:.12em
-}
-.yt-ring{
-  position:absolute;
-  width:clamp(36px,5vw,68px);
-  height:clamp(36px,5vw,68px);
-  border-radius:50%
-}
-.yt-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-.yt-ring circle{
-  fill:none;stroke:rgba(255,80,80,.5);stroke-width:2;
-  stroke-dasharray:157;stroke-dashoffset:157;
-  transition:stroke-dashoffset .9s linear
-}
-#ytFrame{
-  position:absolute;inset:0;width:100%;height:100%;
-  border:none;background:#000;display:none;z-index:2
-}
+#ytFrame{position:absolute;inset:0;width:100%;height:100%;border:none;background:#000;display:block;z-index:2}
 .live-foot{
-  position:absolute;bottom:0;left:0;right:0;
-  padding:.18vw .38vw;
-  font-size:clamp(4px,.30vw,7px);
-  color:rgba(255,100,100,.45);
-  z-index:3;
-  background:linear-gradient(0deg,rgba(0,0,0,.6),transparent)
+  position:absolute;bottom:0;left:0;right:0;padding:.16vw .36vw;
+  font-size:clamp(4px,.28vw,7px);color:rgba(255,100,100,.45);z-index:3;
+  background:linear-gradient(0deg,rgba(0,0,0,.45),transparent);
 }
 .live-foot a{color:rgba(255,130,130,.6);text-decoration:none}
 
-.met-panel{padding:.56vw .48vw}
+.met-panel{padding:.54vw .46vw}
 .met-big{
-  font-family:'Share Tech Mono',monospace;
-  font-weight:700;
-  text-align:center;
-  color:var(--c1);
-  font-size:clamp(13px,2.0vw,44px);
-  text-shadow:0 0 20px rgba(100,200,255,.6),0 0 50px rgba(100,200,255,.2);
-  letter-spacing:.02em;line-height:1;white-space:nowrap;
-  font-variant-numeric:tabular-nums lining-nums;
-  font-feature-settings:"tnum" 1
+  font-family:'Share Tech Mono',monospace;font-weight:700;text-align:center;
+  color:var(--c1);font-size:clamp(13px,1.9vw,42px);
+  text-shadow:0 0 22px rgba(200,120,255,.55),0 0 50px rgba(160,60,255,.15);
+  letter-spacing:.04em;line-height:1;white-space:nowrap;
+  font-variant-numeric:tabular-nums;
 }
 .met-lbl{
-  margin-top:.16vw;text-align:center;
-  font-size:clamp(4px,.30vw,7px);
-  color:rgba(100,180,255,.28);
-  letter-spacing:.18em
+  margin-top:.14vw;text-align:center;font-size:clamp(4px,.28vw,7px);
+  color:rgba(160,100,255,.28);letter-spacing:.18em;
 }
-
-.crew-grid{display:grid;grid-template-columns:1fr 1fr;gap:.26vw}
+.crew-grid{display:grid;grid-template-columns:1fr 1fr;gap:.24vw}
 .crew-card{
-  background:rgba(30,80,140,.08);
-  border:1px solid rgba(80,160,255,.10);
-  border-radius:.16vw;
-  padding:.26vw .16vw;
-  text-align:center
+  background:rgba(50,10,100,.06);border:1px solid rgba(140,60,220,.08);
+  border-radius:.14vw;padding:.24vw .14vw;text-align:center;
+  backdrop-filter:blur(4px);
 }
-.crew-role{font-size:clamp(4px,.24vw,6px);color:rgba(100,180,255,.32)}
-.crew-name{margin-top:.08vw;font-size:clamp(5px,.36vw,8px);color:rgba(220,235,255,.72)}
+.crew-role{font-size:clamp(4px,.22vw,6px);color:rgba(160,100,255,.30)}
+.crew-name{margin-top:.06vw;font-size:clamp(5px,.34vw,8px);color:rgba(230,210,255,.68)}
 
+.center-top,
+#progWrap{
+  background:linear-gradient(160deg,rgba(22,6,50,.10),rgba(10,2,28,.18));
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  border:1px solid rgba(180,100,255,.12);
+  border-radius:.26vw;
+}
 .center-top{
-  background:linear-gradient(160deg,rgba(5,20,45,.65),rgba(2,10,24,.80));
-  backdrop-filter:blur(3px);
-  border:1px solid var(--border);
-  border-radius:.28vw;
-  padding:.42vw .55vw;
-  display:flex;align-items:center;justify-content:space-between;gap:.5vw;
-  box-shadow:inset 0 1px 0 rgba(120,200,255,.06)
+  padding:.40vw .52vw;display:flex;align-items:center;justify-content:space-between;gap:.5vw;
+  box-shadow:inset 0 1px 0 rgba(200,120,255,.04);
 }
 .phase-line{
-  font-family:'Orbitron',sans-serif;
-  font-size:clamp(7px,.82vw,17px);
-  color:var(--c4);
-  letter-spacing:.08em;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  text-shadow:0 0 14px rgba(255,208,60,.4)
+  font-family:'Orbitron',sans-serif;font-size:clamp(7px,.78vw,16px);
+  color:var(--c4);letter-spacing:.09em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-shadow:0 0 16px rgba(255,224,128,.38);
 }
-.phase-sub{
-  font-size:clamp(4px,.30vw,7px);
-  color:rgba(100,180,255,.38);
-  margin-top:.08vw
-}
-.map-head-right{
-  font-size:clamp(4px,.32vw,7.5px);
-  color:rgba(100,180,255,.44);
-  text-align:right;white-space:nowrap
-}
+.phase-sub{font-size:clamp(4px,.28vw,7px);color:rgba(160,100,255,.38);margin-top:.07vw}
+.map-head-right{font-size:clamp(4px,.30vw,7.5px);color:rgba(160,100,255,.42);text-align:right;white-space:nowrap}
 
 #mapWrap{
-  flex:1;min-height:0;
-  background:rgba(0,4,12,.95);
-  border:1px solid var(--border);
-  border-radius:.28vw;
-  overflow:hidden;
-  position:relative;
-  box-shadow:inset 0 0 20px rgba(0,60,120,.12)
+  flex:1;min-height:0;background:rgba(2,0,10,.20);
+  border:1px solid rgba(140,80,220,.10);border-radius:.26vw;overflow:hidden;position:relative;
+  box-shadow:inset 0 0 24px rgba(80,0,160,.06);
+  backdrop-filter:blur(4px);
 }
 #mapCanvas{display:block;width:100%;height:100%}
 
-#progWrap{
-  background:linear-gradient(160deg,rgba(5,20,45,.65),rgba(2,10,24,.80));
-  backdrop-filter:blur(3px);
-  border:1px solid var(--border);
-  border-radius:.28vw;
-  padding:.40vw .52vw
-}
+#progWrap{padding:.38vw .50vw}
 .prog-labels{
   display:flex;justify-content:space-between;
-  font-size:clamp(4px,.32vw,8px);
-  color:rgba(100,180,255,.36);
-  margin-bottom:.28vw
+  font-size:clamp(4px,.30vw,8px);color:rgba(160,100,255,.34);margin-bottom:.26vw;
 }
-.prog-track{
-  height:.20vw;min-height:3px;background:rgba(80,180,255,.07);
-  border-radius:2px;position:relative
-}
+.prog-track{height:.18vw;min-height:3px;background:rgba(140,60,220,.07);border-radius:2px;position:relative}
 .prog-fill{
-  height:100%;
-  border-radius:2px;
-  background:linear-gradient(90deg,#4fc3f7,#7ee8ff,#ffd060);
-  transition:width 1s linear;
-  position:relative
+  height:100%;border-radius:2px;
+  background:linear-gradient(90deg,#9955ff,#cc88ff,#ffe080);
+  transition:width 1s linear;position:relative;
 }
 .prog-fill::after{
-  content:'';
-  position:absolute;right:-.22vw;top:-.22vw;
-  width:.50vw;height:.50vw;min-width:7px;min-height:7px;
+  content:'';position:absolute;right:-.20vw;top:-.20vw;
+  width:.48vw;height:.48vw;min-width:7px;min-height:7px;
   background:var(--c4);border:1px solid var(--c4);
-  transform:rotate(45deg);box-shadow:0 0 8px var(--c4)
+  transform:rotate(45deg);box-shadow:0 0 10px var(--c4);
 }
 
-.status-grid{display:flex;flex-direction:column;gap:.16vw}
-.sys-row{display:flex;align-items:center;justify-content:space-between;gap:.26vw}
-.sys-bar{
-  flex:1;height:.16vw;min-height:2px;
-  background:rgba(80,180,255,.07);
-  border-radius:2px;margin:0 .28vw;overflow:hidden
-}
+.status-grid{display:flex;flex-direction:column;gap:.14vw}
+.sys-row{display:flex;align-items:center;justify-content:space-between;gap:.24vw}
+.sys-bar{flex:1;height:.14vw;min-height:2px;background:rgba(140,60,220,.07);border-radius:2px;margin:0 .26vw;overflow:hidden}
 .sys-fill{height:100%;border-radius:2px}
-.sys-val{
-  min-width:1.8vw;text-align:right;
-  font-size:clamp(4px,.38vw,8.5px);
-  color:var(--c1);font-family:'Orbitron',sans-serif
-}
-.compact-block .dr{margin:.14vw 0}
-.compact-block .dv{font-size:clamp(6px,.68vw,14px)}
+.sys-val{min-width:1.7vw;text-align:right;font-size:clamp(4px,.36vw,8.5px);color:var(--c1);font-family:'Orbitron',sans-serif}
+.compact-block .dr{margin:.12vw 0}
+.compact-block .dv{font-size:clamp(6px,.64vw,13px)}
 
-.timeline-panel{
-  flex:1;min-height:0;
-  display:flex;flex-direction:column
-}
-.timeline-scroll{
-  flex:1;min-height:0;
-  overflow-y:auto;
-  padding-right:.12vw
-}
+.timeline-panel{flex:1;min-height:0;display:flex;flex-direction:column}
+.timeline-scroll{flex:1;min-height:0;overflow-y:auto;padding-right:.10vw}
 .timeline-scroll::-webkit-scrollbar{width:4px}
-.timeline-scroll::-webkit-scrollbar-thumb{background:rgba(80,180,255,.20)}
-.tl-item{
-  display:flex;align-items:flex-start;gap:.38vw;
-  padding:.13vw 0;opacity:.32;transition:opacity .5s
-}
-.tl-item.done{opacity:.55}
+.timeline-scroll::-webkit-scrollbar-thumb{background:rgba(140,60,220,.22)}
+.tl-item{display:flex;align-items:flex-start;gap:.36vw;padding:.12vw 0;opacity:.30;transition:opacity .5s}
+.tl-item.done{opacity:.52}
 .tl-item.active{opacity:1}
 .tl-dot{
-  width:.32vw;height:.32vw;min-width:5px;min-height:5px;
-  border-radius:50%;border:1px solid rgba(80,180,255,.26);
-  flex:none;margin-top:.11vw;transition:all .3s
+  width:.30vw;height:.30vw;min-width:5px;min-height:5px;
+  border-radius:50%;border:1px solid rgba(160,80,255,.28);flex:none;margin-top:.10vw;
 }
-.tl-item.done .tl-dot{background:rgba(100,200,255,.28);border-color:var(--c1)}
-.tl-item.active .tl-dot{
-  background:var(--c1);border-color:var(--c1);
-  box-shadow:0 0 8px var(--c1);
-  animation:blink 1.3s infinite
-}
-.tl-name{
-  font-size:clamp(4px,.36vw,8px);
-  color:rgba(150,210,255,.85);
-  letter-spacing:.07em
-}
-.tl-desc{
-  font-size:clamp(3px,.27vw,6.5px);
-  color:rgba(200,225,255,.28);
-  margin-top:.03vw
-}
+.tl-item.done .tl-dot{background:rgba(180,100,255,.30);border-color:var(--c1)}
+.tl-item.active .tl-dot{background:var(--c1);border-color:var(--c1);box-shadow:0 0 10px var(--c1);animation:blink 1.3s infinite}
+.tl-name{font-size:clamp(4px,.34vw,7.5px);color:rgba(210,170,255,.85);letter-spacing:.07em}
+.tl-desc{font-size:clamp(3px,.25vw,6px);color:rgba(200,180,255,.28);margin-top:.02vw}
 
 .link-btn{
   display:block;text-decoration:none;text-align:center;
-  padding:.28vw .40vw;margin-bottom:.22vw;
-  border-radius:.16vw;
-  font-size:clamp(4px,.34vw,7.5px);
-  letter-spacing:.11em;
-  transition:.2s
+  padding:.26vw .38vw;margin-bottom:.20vw;border-radius:.14vw;
+  font-size:clamp(4px,.32vw,7.5px);letter-spacing:.11em;transition:.2s;
 }
-.link-btn:hover{filter:brightness(1.3)}
-.link-arow{background:rgba(60,150,255,.07);border:1px solid rgba(60,150,255,.22);color:var(--c5)}
-.link-yt{background:rgba(220,0,0,.07);border:1px solid rgba(220,0,0,.22);color:#ff5555}
-.src-lbl{
-  margin-top:.20vw;text-align:center;
-  font-size:clamp(3px,.25vw,6.5px);
-  color:rgba(100,180,255,.22);
-  letter-spacing:.10em
-}
+.link-btn:hover{filter:brightness(1.35)}
+.link-arow{background:rgba(100,60,200,.06);border:1px solid rgba(140,80,220,.18);color:var(--c1)}
+.link-yt{background:rgba(200,0,0,.05);border:1px solid rgba(200,0,0,.18);color:#ff5555}
+.src-lbl{margin-top:.18vw;text-align:center;font-size:clamp(3px,.24vw,6.5px);color:rgba(160,100,255,.24);letter-spacing:.10em}
 
-.mini-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:.24vw
-}
-.mini-card{
-  background:rgba(20,60,110,.08);
-  border:1px solid rgba(80,160,255,.10);
-  border-radius:.16vw;
-  padding:.26vw .24vw;
-  min-height:2.6vw
-}
-.mini-label{
-  font-size:clamp(3px,.25vw,6px);
-  color:rgba(120,190,255,.34);
-  letter-spacing:.10em
-}
-.mini-value{
-  margin-top:.10vw;
-  font-family:'Orbitron',sans-serif;
-  font-size:clamp(6px,.60vw,12px);
-  color:#eef8ff;
-  white-space:nowrap
-}
-
-.att-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:.22vw
-}
-.att-cell{
-  background:rgba(20,70,110,.08);
-  border:1px solid rgba(80,160,255,.10);
-  border-radius:.15vw;
-  padding:.28vw .22vw;
-  text-align:center;
-  min-height:2.3vw
-}
-.att-name{
-  font-size:clamp(3px,.24vw,6px);
-  color:rgba(120,190,255,.34)
-}
-.att-val{
-  margin-top:.10vw;
-  font-family:'Orbitron',sans-serif;
-  font-size:clamp(6px,.58vw,12px);
-  color:#e8f4ff
-}
-
-.quat-row{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:.16vw
-}
-.quat-box{
-  background:rgba(20,60,110,.08);
-  border:1px solid rgba(80,160,255,.10);
-  border-radius:.12vw;
-  padding:.22vw;
-  text-align:center;
-  min-height:2.1vw
-}
-.quat-l{
-  font-size:clamp(3px,.22vw,5.5px);
-  color:rgba(120,190,255,.32)
-}
-.quat-v{
-  margin-top:.05vw;
-  font-size:clamp(4px,.32vw,7px);
-  color:#dff1ff
-}
-
-.thruster-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.16vw}
-.thruster{
-  border:1px solid rgba(80,160,255,.14);
-  background:rgba(15,35,60,.35);
-  border-radius:.12vw;
-  padding:.16vw;
-  text-align:center;
-  transition:.15s
-}
-.thruster.active{
-  background:rgba(109,255,211,.14);
-  border-color:rgba(109,255,211,.55);
-  box-shadow:0 0 10px rgba(109,255,211,.18), inset 0 0 8px rgba(109,255,211,.08)
-}
-.thruster.warn{
-  background:rgba(255,180,70,.12);
-  border-color:rgba(255,180,70,.45);
-  box-shadow:0 0 10px rgba(255,180,70,.16)
-}
-.thruster-name{font-size:clamp(3px,.22vw,5.5px);color:rgba(150,210,255,.58)}
-.thruster-val{margin-top:.04vw;font-size:clamp(4px,.28vw,7px);color:#eff9ff}
-
-.event-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:.18vw
-}
+.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:.22vw}
+.mini-card,
+.att-cell,
+.quat-box,
+.thruster,
 .event-flag{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:.2vw;
-  background:rgba(15,35,60,.35);
-  border:1px solid rgba(80,160,255,.12);
-  border-radius:.14vw;
-  padding:.24vw .26vw;
-  min-height:2vw
+  backdrop-filter:blur(4px);
 }
-.event-name{
-  font-size:clamp(3px,.24vw,6px);
-  color:rgba(150,210,255,.58);
-  white-space:nowrap
-}
-.event-dot{
-  width:.38vw;height:.38vw;min-width:6px;min-height:6px;
-  border-radius:50%;
-  background:rgba(120,180,255,.15);
-  border:1px solid rgba(120,180,255,.25)
-}
-.event-dot.on{
-  background:var(--ok);border-color:var(--ok);box-shadow:0 0 8px var(--ok)
-}
-.event-dot.warn{
-  background:var(--warn);border-color:var(--warn);box-shadow:0 0 8px var(--warn)
-}
+.mini-card{background:rgba(40,10,80,.06);border:1px solid rgba(140,60,220,.08);border-radius:.14vw;padding:.24vw .22vw;min-height:2.4vw}
+.mini-label{font-size:clamp(3px,.23vw,6px);color:rgba(180,120,255,.34);letter-spacing:.10em}
+.mini-value{margin-top:.08vw;font-family:'Orbitron',sans-serif;font-size:clamp(5px,.56vw,12px);color:#ede0ff;white-space:nowrap}
+
+.att-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.20vw}
+.att-cell{background:rgba(40,10,80,.06);border:1px solid rgba(140,60,220,.08);border-radius:.14vw;padding:.26vw .20vw;text-align:center;min-height:2.2vw}
+.att-name{font-size:clamp(3px,.22vw,5.5px);color:rgba(180,120,255,.34)}
+.att-val{margin-top:.08vw;font-family:'Orbitron',sans-serif;font-size:clamp(5px,.56vw,12px);color:#ede0ff}
+
+.quat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.14vw}
+.quat-box{background:rgba(40,10,80,.06);border:1px solid rgba(140,60,220,.08);border-radius:.10vw;padding:.20vw;text-align:center;min-height:1.9vw}
+.quat-l{font-size:clamp(3px,.20vw,5px);color:rgba(180,120,255,.30)}
+.quat-v{margin-top:.04vw;font-size:clamp(4px,.30vw,7px);color:#e8d8ff}
+
+.thruster-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.14vw}
+.thruster{border:1px solid rgba(140,60,220,.10);background:rgba(20,4,50,.18);border-radius:.10vw;padding:.14vw;text-align:center;transition:.15s}
+.thruster.active{background:rgba(180,100,255,.12);border-color:rgba(200,120,255,.38);box-shadow:0 0 10px rgba(180,80,255,.12)}
+.thruster.warn{background:rgba(255,180,70,.08);border-color:rgba(255,180,70,.30)}
+.thruster-name{font-size:clamp(3px,.20vw,5px);color:rgba(180,140,255,.58)}
+.thruster-val{margin-top:.03vw;font-size:clamp(4px,.26vw,7px);color:#ede0ff}
+
+.event-grid{display:grid;grid-template-columns:1fr 1fr;gap:.16vw}
+.event-flag{display:flex;align-items:center;justify-content:space-between;gap:.18vw;background:rgba(20,4,50,.18);border:1px solid rgba(140,60,220,.10);border-radius:.12vw;padding:.22vw .24vw;min-height:1.9vw}
+.event-name{font-size:clamp(3px,.22vw,6px);color:rgba(180,140,255,.60);white-space:nowrap}
+.event-dot{width:.36vw;height:.36vw;min-width:5px;min-height:5px;border-radius:50%;background:rgba(140,80,220,.14);border:1px solid rgba(140,80,220,.22)}
+.event-dot.on{background:var(--ok);border-color:var(--ok);box-shadow:0 0 8px var(--ok)}
+.event-dot.warn{background:var(--warn);border-color:var(--warn);box-shadow:0 0 8px var(--warn)}
 </style>
 </head>
 <body>
@@ -602,12 +369,22 @@ body::after{
   <div class="scene-inner">
     <div class="aspect-box">
       <img id="bg" src="back-artemis.png" alt=""/>
+
       <div class="window-viewport">
         <div id="hud">
+          <div class="holo-lines"></div>
+          <div class="holo-scan"></div>
+          <div class="holo-edge"></div>
+
+          <div class="holo-corner hc-tl"><svg viewBox="0 0 32 32"><path d="M2 30L2 2L30 2" fill="none" stroke="#cc88ff" stroke-width="1.2" opacity=".4"/><path d="M2 2L11 2M2 2L2 11" fill="none" stroke="#cc88ff" stroke-width="2.5" opacity=".9"/></svg></div>
+          <div class="holo-corner hc-tr"><svg viewBox="0 0 32 32"><path d="M2 30L2 2L30 2" fill="none" stroke="#cc88ff" stroke-width="1.2" opacity=".4"/><path d="M2 2L11 2M2 2L2 11" fill="none" stroke="#cc88ff" stroke-width="2.5" opacity=".9"/></svg></div>
+          <div class="holo-corner hc-bl"><svg viewBox="0 0 32 32"><path d="M2 30L2 2L30 2" fill="none" stroke="#cc88ff" stroke-width="1.2" opacity=".4"/><path d="M2 2L11 2M2 2L2 11" fill="none" stroke="#cc88ff" stroke-width="2.5" opacity=".9"/></svg></div>
+          <div class="holo-corner hc-br"><svg viewBox="0 0 32 32"><path d="M2 30L2 2L30 2" fill="none" stroke="#cc88ff" stroke-width="1.2" opacity=".4"/><path d="M2 2L11 2M2 2L2 11" fill="none" stroke="#cc88ff" stroke-width="2.5" opacity=".9"/></svg></div>
+
           <div id="topBar">
             <div class="header-wrap">
               <div class="mission-title">ARTEMIS II · ORION</div>
-              <div class="mission-sub">COCKPIT NAVIGATION DISPLAY · REAL-TIME TRACKING</div>
+              <div class="mission-sub">HOLOGRAPHIC NAVIGATION DISPLAY · REAL-TIME TRACKING</div>
             </div>
             <div class="live-badge"><div class="live-dot"></div>LIVE</div>
           </div>
@@ -616,20 +393,11 @@ body::after{
             <div class="col">
               <div class="live-tile">
                 <div class="live-head"><div class="live-dot" style="flex:none"></div>NASA OFFICIAL BROADCAST</div>
-                <div id="ytOverlay">
-                  <div style="position:relative;display:flex;align-items:center;justify-content:center">
-                    <div class="yt-ring"><svg viewBox="0 0 50 50"><circle id="cdRing" cx="25" cy="25" r="24"/></svg></div>
-                    <div class="yt-play-btn">&#9654;</div>
-                  </div>
-                  <div class="yt-play-label">PLAY NASA LIVE STREAM</div>
-                  <div class="yt-auto-label" id="cdLabel">AUTO-STARTING IN 5s · CLICK TO START NOW</div>
-                </div>
                 <iframe id="ytFrame"
-                  src="about:blank"
+                  src="https://www.youtube.com/embed/m3kR2KK8TEs?controls=1&autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1"
                   title="Artemis II NASA Live"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowfullscreen>
-                </iframe>
+                  allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;web-share"
+                  allowfullscreen></iframe>
                 <div class="live-foot">NASA TV · <a href="https://www.youtube.com/watch?v=m3kR2KK8TEs" target="_blank">Open on YouTube ↗</a></div>
               </div>
 
@@ -643,7 +411,7 @@ body::after{
                 <div class="dr"><span class="dl">VELOCITY</span><span class="dv or" id="vVel">—</span></div>
                 <div class="dr"><span class="dl">COMM DELAY</span><span class="dv bl" id="vComm">—</span></div>
                 <div class="divider"></div>
-                <div class="dr"><span class="dl">PHASE</span><span class="dv bl" id="vPhase" style="font-size:clamp(5px,.60vw,13px)">—</span></div>
+                <div class="dr"><span class="dl">PHASE</span><span class="dv bl" id="vPhase" style="font-size:clamp(5px,.58vw,12px)">—</span></div>
               </div>
 
               <div class="panel">
@@ -753,137 +521,93 @@ body::after{
             </div>
           </div>
 
-          <div class="hud-vignette"></div>
-          <div class="glass-layer"><div class="glass-sheen"></div><div class="glass-glow"></div><div class="glass-edge"></div></div>
+          <div class="glass-layer"><div class="glass-sheen"></div><div class="glass-glow"></div></div>
           <div class="edge-reflection"></div>
         </div>
       </div>
+
       <img id="front" src="front-artemis.png" alt=""/>
     </div>
   </div>
 </div>
 
 <script>
-const YT_SRC = 'https://www.youtube.com/embed/m3kR2KK8TEs?controls=1&autoplay=1&mute=0&rel=0&modestbranding=1&playsinline=1';
-const AUTO_DELAY = 5;
-
-const ytOverlay = document.getElementById('ytOverlay');
-const ytFrame   = document.getElementById('ytFrame');
-const cdRing    = document.getElementById('cdRing');
-const cdLabel   = document.getElementById('cdLabel');
-let ytStarted   = false;
-let cdLeft      = AUTO_DELAY;
-
-function startStream() {
-  if (ytStarted) return;
-  ytStarted = true;
-  ytFrame.src = YT_SRC;
-  ytFrame.style.display = 'block';
-  ytOverlay.classList.add('hidden');
-}
-ytOverlay.addEventListener('click', startStream);
-
-const cdInterval = setInterval(() => {
-  cdLeft--;
-  const pct = cdLeft / AUTO_DELAY;
-  cdRing.style.strokeDashoffset = 150 * pct;
-  if (cdLeft <= 0) {
-    clearInterval(cdInterval);
-    cdLabel.textContent = 'STARTING STREAM...';
-    setTimeout(startStream, 200);
-  } else {
-    cdLabel.textContent = `AUTO-STARTING IN ${cdLeft}s · CLICK TO START NOW`;
-  }
-}, 1000);
-
 const HUD_WINDOW = { x:0.141, y:0.115, w:0.63, h:0.652 };
+
 const aspectBox  = document.querySelector('.aspect-box');
 const viewportEl = document.querySelector('.window-viewport');
 const frontImg   = document.getElementById('front');
 const backImg    = document.getElementById('bg');
 
-function updateViewport() {
+function updateViewport(){
   const boxW = aspectBox.clientWidth  || window.innerWidth;
   const boxH = aspectBox.clientHeight || window.innerHeight;
-  const imgW = frontImg.naturalWidth  || backImg.naturalWidth  || 3840;
-  const imgH = frontImg.naturalHeight || backImg.naturalHeight || 2160;
-  const imgRatio = imgW / imgH;
-  const boxRatio = boxW / boxH;
-  let drawW, drawH, offsetX = 0, offsetY = 0;
-  if (boxRatio > imgRatio) {
-    drawW = boxW;
-    drawH = boxW / imgRatio;
-    offsetY = (boxH - drawH) / 2;
-  } else {
-    drawH = boxH;
-    drawW = boxH * imgRatio;
-    offsetX = (boxW - drawW) / 2;
-  }
-  viewportEl.style.left   = (offsetX + drawW * HUD_WINDOW.x) + 'px';
-  viewportEl.style.top    = (offsetY + drawH * HUD_WINDOW.y) + 'px';
-  viewportEl.style.width  = (drawW * HUD_WINDOW.w) + 'px';
-  viewportEl.style.height = (drawH * HUD_WINDOW.h) + 'px';
+  const imgW = frontImg.naturalWidth  || backImg.naturalWidth  || 1456;
+  const imgH = frontImg.naturalHeight || backImg.naturalHeight || 816;
+  const imgR = imgW/imgH, boxR = boxW/boxH;
+  let drawW,drawH,offX=0,offY=0;
+  if(boxR>imgR){ drawW=boxW; drawH=boxW/imgR; offY=(boxH-drawH)/2; }
+  else{ drawH=boxH; drawW=boxH*imgR; offX=(boxW-drawW)/2; }
+  viewportEl.style.left   = (offX + drawW*HUD_WINDOW.x) + 'px';
+  viewportEl.style.top    = (offY + drawH*HUD_WINDOW.y) + 'px';
+  viewportEl.style.width  = (drawW*HUD_WINDOW.w) + 'px';
+  viewportEl.style.height = (drawH*HUD_WINDOW.h) + 'px';
 }
+new ResizeObserver(updateViewport).observe(aspectBox);
+frontImg.addEventListener('load', updateViewport);
+backImg.addEventListener('load', updateViewport);
+updateViewport();
 
 const LAUNCH   = new Date('2026-04-01T22:35:00Z');
-const DUR      = 10 * 24 * 3600;
+const DUR      = 10*24*3600;
 const MOON_A   = 384400;
-const MOON_PER = 27.321661 * 24 * 3600;
-const MOON_L0  = 218.3 * Math.PI / 180;
+const MOON_PER = 27.321661*24*3600;
+const MOON_L0  = 218.3*Math.PI/180;
 const J2000    = new Date('2000-01-01T12:00:00Z');
+const PROXY    = 'https://api.allorigins.win/get?url=';
 
-const MILESTONES = [
-  {label:'LAUNCH',t:0,desc:'SLS liftoff · LC-39B'},
-  {label:'EARTH ORBIT',t:.5*3600,desc:'Parking orbit insertion'},
-  {label:'TLI BURN',t:25.23*3600,desc:'Trans-Lunar Injection'},
-  {label:'DEEP SPACE',t:30*3600,desc:'Beyond Earth orbit'},
-  {label:'LUNAR APPROACH',t:4.2*24*3600,desc:'Moon in sight'},
-  {label:'LUNAR FLYBY',t:5.2*24*3600,desc:'~7 600 km closest pass'},
-  {label:'MAX DISTANCE',t:6*24*3600,desc:'Record distance from Earth'},
-  {label:'RETURN BURN',t:6.5*24*3600,desc:'Homeward trajectory'},
-  {label:'REENTRY',t:9.8*24*3600,desc:'Atmospheric entry'},
-  {label:'SPLASHDOWN',t:10*24*3600,desc:'Pacific Ocean recovery'},
+const MILESTONES=[
+  {label:'LAUNCH',         t:0,             desc:'SLS liftoff · LC-39B'},
+  {label:'EARTH ORBIT',    t:.5*3600,       desc:'Parking orbit insertion'},
+  {label:'TLI BURN',       t:25.23*3600,    desc:'Trans-Lunar Injection'},
+  {label:'DEEP SPACE',     t:30*3600,       desc:'Beyond Earth orbit'},
+  {label:'LUNAR APPROACH', t:4.2*24*3600,   desc:'Moon in sight'},
+  {label:'LUNAR FLYBY',    t:5.2*24*3600,   desc:'~7 600 km closest pass'},
+  {label:'MAX DISTANCE',   t:6*24*3600,     desc:'Record distance from Earth'},
+  {label:'RETURN BURN',    t:6.5*24*3600,   desc:'Homeward trajectory'},
+  {label:'REENTRY',        t:9.8*24*3600,   desc:'Atmospheric entry'},
+  {label:'SPLASHDOWN',     t:10*24*3600,    desc:'Pacific Ocean recovery'},
 ];
 
-const THRUSTER_KEYS = [
+const THRUSTER_KEYS=[
   'attMotorSD5A','attMotorSR4R','attMotorSR3L','attMotorSR3R','attMotorSD6A','attMotorSD5F',
   'attMotorSD6F','attMotorSA3F','attMotorSB5F','attMotorSA3A','attMotorSA4F','attMotorSA4A',
   'attMotorSC1F','attMotorSC1A','attMotorSC2A','attMotorSR4L','attMotorSB5A','attMotorSB6F',
   'attMotorSC2F','attMotorSB6A','attMotorSR2L','attMotorSR2R','attMotorSR1L','attMotorSR1R'
 ];
 
-const fkm  = k => k>=1e6?(k/1e6).toFixed(2)+'M km':k>=1e5?(k/1e3).toFixed(1)+'k km':Math.round(k).toLocaleString('en-US')+' km';
-const fkms = v => v.toFixed(2)+' km/s';
-const fmet = s => {
-  s = Math.max(0, Math.floor(s));
-  const d  = Math.floor(s / 86400);
-  const h  = Math.floor((s % 86400) / 3600);
-  const m  = Math.floor((s % 3600) / 60);
-  const sc = s % 60;
-  return d>0
-    ? `${d}D ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`
-    : `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;
+const fkm  = k=>k>=1e6?(k/1e6).toFixed(2)+'M km':k>=1e5?(k/1e3).toFixed(1)+'k km':Math.round(k).toLocaleString('en-US')+' km';
+const fkms = v=>v.toFixed(2)+' km/s';
+const fmet = s=>{
+  s=Math.max(0,Math.floor(s));
+  const d=Math.floor(s/86400),h=Math.floor((s%86400)/3600),m=Math.floor((s%3600)/60),sc=s%60;
+  return d>0?`${d}D ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`
+            :`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;
 };
-const fRem = s => {
-  const l = Math.max(0, DUR - s);
-  const d = Math.floor(l / 86400);
-  const h = Math.floor((l % 86400) / 3600);
-  return `${d}d ${h}h left`;
-};
+const fRem = s=>{const l=Math.max(0,DUR-s),d=Math.floor(l/86400),h=Math.floor((l%86400)/3600);return `${d}d ${h}h left`;};
 const lerp = (a,b,t)=>a+(b-a)*t;
 const ease = t=>t*t*(3-2*t);
 
-function getMoonPos(t) {
+function getMoonPos(t){
   const dt=(t-J2000)/1000;
   const ang=MOON_L0+(dt/MOON_PER)*2*Math.PI;
   const e=0.0549;
-  let M=((ang%(2*Math.PI))+2*Math.PI)%(2*Math.PI), E=M;
-  E=M+e*Math.sin(E); E=M+e*Math.sin(E);
+  let M=((ang%(2*Math.PI))+2*Math.PI)%(2*Math.PI),E=M;
+  E=M+e*Math.sin(E);E=M+e*Math.sin(E);
   const ta=2*Math.atan2(Math.sqrt(1+e)*Math.sin(E/2),Math.sqrt(1-e)*Math.cos(E/2));
   const r=MOON_A*(1-e*Math.cos(E));
-  return {x:r*Math.cos(ta), y:r*Math.sin(ta)};
+  return{x:r*Math.cos(ta),y:r*Math.sin(ta)};
 }
-
 function getPhase(ed,md){
   if(ed<20000)            return['EARTH ORBIT','Parking orbit · ~400 km'];
   if(ed<150000&&md>80000) return['OUTBOUND TO MOON','Trans-Lunar trajectory active'];
@@ -898,576 +622,293 @@ function buildPhysics(){
   for(let ms=0;ms<=DUR*1000;ms+=60000){
     const t=new Date(t0+ms),frac=ms/(DUR*1000),moon=getMoonPos(t);
     let x,y,vx=0,vy=0;
-    if(frac<0.04){
-      const a=frac/0.04*3*Math.PI,r=6563+frac*30000;
-      x=r*Math.cos(a);y=r*Math.sin(a);
-      vx=-Math.sqrt(398600/r)*Math.sin(a);vy=Math.sqrt(398600/r)*Math.cos(a);
-    } else if(frac<0.08){
-      const tf=(frac-.04)/.04,r=36000+tf*50000,a=3*Math.PI+tf*.8;
-      x=r*Math.cos(a);y=r*Math.sin(a);vx=8-tf*5;vy=2;
-    } else if(frac<0.44){
-      const tf=(frac-.08)/.36,e=ease(tf);
-      x=lerp(80000*Math.cos(4.6),moon.x*.92,e);
-      y=lerp(80000*Math.sin(4.6),moon.y*.92,e);
-      vx=lerp(3.5,1,tf);vy=vx*.3;
-    } else if(frac<0.58){
-      const tf=(frac-.44)/.14,a=Math.PI+tf*1.6*Math.PI,r=6000+15000*Math.sin(tf*Math.PI);
-      x=moon.x+r*Math.cos(a);y=moon.y+r*Math.sin(a);
-      const sp=2.2+tf*.3;vx=-sp*Math.sin(a);vy=sp*Math.cos(a);
-    } else {
-      const tf=(frac-.58)/.42,e=ease(tf),mn=getMoonPos(t),
-            sx=mn.x+4000*Math.cos(4.712),sy=mn.y+4000*Math.sin(4.712);
-      x=lerp(sx,0,e);y=lerp(sy,0,e);
-      const sp=lerp(1,11,tf),l=Math.sqrt(x*x+y*y)||1;
-      vx=-sp*(x/l);vy=-sp*(y/l);
-    }
+    if(frac<0.04){const a=frac/0.04*3*Math.PI,r=6563+frac*30000;x=r*Math.cos(a);y=r*Math.sin(a);vx=-Math.sqrt(398600/r)*Math.sin(a);vy=Math.sqrt(398600/r)*Math.cos(a);}
+    else if(frac<0.08){const tf=(frac-.04)/.04,r=36000+tf*50000,a=3*Math.PI+tf*.8;x=r*Math.cos(a);y=r*Math.sin(a);vx=8-tf*5;vy=2;}
+    else if(frac<0.44){const tf=(frac-.08)/.36,e=ease(tf);x=lerp(80000*Math.cos(4.6),moon.x*.92,e);y=lerp(80000*Math.sin(4.6),moon.y*.92,e);vx=lerp(3.5,1,tf);vy=vx*.3;}
+    else if(frac<0.58){const tf=(frac-.44)/.14,a=Math.PI+tf*1.6*Math.PI,r=6000+15000*Math.sin(tf*Math.PI);x=moon.x+r*Math.cos(a);y=moon.y+r*Math.sin(a);const sp=2.2+tf*.3;vx=-sp*Math.sin(a);vy=sp*Math.cos(a);}
+    else{const tf=(frac-.58)/.42,e=ease(tf),mn=getMoonPos(t),sx=mn.x+4000*Math.cos(4.712),sy=mn.y+4000*Math.sin(4.712);x=lerp(sx,0,e);y=lerp(sy,0,e);const sp=lerp(1,11,tf),l=Math.sqrt(x*x+y*y)||1;vx=-sp*(x/l);vy=-sp*(y/l);}
     vecs.push({t,x,y,vx,vy});
   }
   return vecs;
 }
-
 function interpolate(vecs,t){
   if(!vecs.length)return null;
   const ts=t.getTime();
   if(ts<=vecs[0].t.getTime())return{...vecs[0]};
   if(ts>=vecs[vecs.length-1].t.getTime())return{...vecs[vecs.length-1]};
   let lo=0,hi=vecs.length-1;
-  while(hi-lo>1){
-    const mid=(lo+hi)>>1;
-    if(vecs[mid].t.getTime()<=ts)lo=mid;else hi=mid;
-  }
+  while(hi-lo>1){const mid=(lo+hi)>>1;if(vecs[mid].t.getTime()<=ts)lo=mid;else hi=mid;}
   const a=vecs[lo],b=vecs[hi],f=(ts-a.t.getTime())/(b.t.getTime()-a.t.getTime());
-  return {
-    x:a.x+(b.x-a.x)*f,
-    y:a.y+(b.y-a.y)*f,
-    vx:a.vx+(b.vx-a.vx)*f,
-    vy:a.vy+(b.vy-a.vy)*f,
-    t
-  };
+  return{x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,vx:a.vx+(b.vx-a.vx)*f,vy:a.vy+(b.vy-a.vy)*f,t};
 }
 
-let stateVectors = buildPhysics();
+let stateVectors=buildPhysics();
+let oemLoaded=false;
+let animPos=null;
+let sweepAngle=0;
+const SMOOTH=0.06;
 
-const SRC = {
-  PHYSICS:  { label:'PHYSICS MODEL',     color:'rgba(100,180,255,.22)', priority:0 },
-  OEM:      { label:'NASA OEM FILE',     color:'rgba(120,220,120,.45)', priority:1 },
-  HORIZONS: { label:'JPL HORIZONS LIVE', color:'rgba(255,210,80,.60)',  priority:2 },
-  AROW:     { label:'NASA AROW LIVE',    color:'rgba(80,255,160,.75)',  priority:3 },
-};
-let activeSource = 'PHYSICS';
-
-let liveNumerics = {
-  active:false,
-  ed:null, md:null, vel:null, comm:null, metSec:null, launchUnix:null,
-  qx:null, qy:null, qz:null, qw:null,
+let liveNumerics={
+  active:false,ed:null,md:null,vel:null,comm:null,metSec:null,
+  qx:null,qy:null,qz:null,qw:null,
   saw:[null,null,null,null,null,null,null,null],
   thrusters:{},
   events:{liftoff:false,icpsBurn:false,primaryBurn:false,srbSep:false,icpsSep:false,smSep:false}
 };
 
-let lastAROWFetch = 0;
-let lastHorizonsFetch = 0;
-let lastOEMFetch = 0;
-let oemLoaded = false;
-const PROXY = 'https://api.allorigins.win/get?url=';
-
-function setSource(key, extra='') {
-  activeSource = key;
-  const s = SRC[key];
-  const el = document.getElementById('srcBadge');
-  if (el) {
-    el.textContent = s.label + (extra ? ' · ' + extra : '');
-    el.style.color = s.color;
-  }
-}
-
-const AROW_BUCKET = 'https://storage.googleapis.com/storage/v1/b/p-2-cen1/o?prefix=October%2F1%2FOctober&maxResults=6';
-
-function decodeAROWJson(text) {
-  try {
-    const d = JSON.parse(text);
-
-    const xFt  = parseFloat(d?.Parameter_2003?.Value);
-    const yFt  = parseFloat(d?.Parameter_2004?.Value);
-    const zFt  = parseFloat(d?.Parameter_2005?.Value);
-    const vxFt = parseFloat(d?.Parameter_2009?.Value);
-    const vyFt = parseFloat(d?.Parameter_2010?.Value);
-    const vzFt = parseFloat(d?.Parameter_2011?.Value);
-
-    const qx = parseFloat(d?.Parameter_2012?.Value);
-    const qy = parseFloat(d?.Parameter_2013?.Value);
-    const qz = parseFloat(d?.Parameter_2014?.Value);
-    const qw = parseFloat(d?.Parameter_2015?.Value);
-
-    const metSec     = parseFloat(d?.Parameter_5001?.Value);
-    const launchUnix = parseFloat(d?.Parameter_5000?.Value);
-
-    if ([xFt,yFt,zFt,vxFt,vyFt,vzFt].some(v => !Number.isFinite(v))) return null;
-
-    const FT_TO_KM = 0.0003048;
-    const x  = xFt * FT_TO_KM;
-    const y  = yFt * FT_TO_KM;
-    const z  = zFt * FT_TO_KM;
-    const vx = vxFt * FT_TO_KM;
-    const vy = vyFt * FT_TO_KM;
-    const vz = vzFt * FT_TO_KM;
-
-    const earthR = Math.sqrt(x*x + y*y + z*z);
-    const moon = getMoonPos(new Date());
-    const md = Math.sqrt((x-moon.x)**2 + (y-moon.y)**2 + z*z);
-
-    const saw = [
-      parseFloat(d?.Parameter_5002?.Value), parseFloat(d?.Parameter_5003?.Value),
-      parseFloat(d?.Parameter_5004?.Value), parseFloat(d?.Parameter_5005?.Value),
-      parseFloat(d?.Parameter_5006?.Value), parseFloat(d?.Parameter_5007?.Value),
-      parseFloat(d?.Parameter_5008?.Value), parseFloat(d?.Parameter_5009?.Value),
-    ];
-
-    const thrusterMap = {
-      attMotorSD5A: parseFloat(d?.Parameter_2066?.Value),
-      attMotorSR4R: parseFloat(d?.Parameter_2067?.Value),
-      attMotorSR3L: parseFloat(d?.Parameter_2068?.Value),
-      attMotorSR3R: parseFloat(d?.Parameter_2069?.Value),
-      attMotorSD6A: parseFloat(d?.Parameter_2070?.Value),
-      attMotorSD5F: parseFloat(d?.Parameter_2071?.Value),
-      attMotorSD6F: parseFloat(d?.Parameter_2072?.Value),
-      attMotorSA3F: parseFloat(d?.Parameter_2073?.Value),
-      attMotorSB5F: parseFloat(d?.Parameter_2074?.Value),
-      attMotorSA3A: parseFloat(d?.Parameter_2075?.Value),
-      attMotorSA4F: parseFloat(d?.Parameter_2076?.Value),
-      attMotorSA4A: parseFloat(d?.Parameter_2077?.Value),
-      attMotorSC1F: parseFloat(d?.Parameter_2078?.Value),
-      attMotorSC1A: parseFloat(d?.Parameter_2079?.Value),
-      attMotorSC2A: parseFloat(d?.Parameter_2080?.Value),
-      attMotorSR4L: parseFloat(d?.Parameter_2081?.Value),
-      attMotorSB5A: parseFloat(d?.Parameter_2082?.Value),
-      attMotorSB6F: parseFloat(d?.Parameter_2083?.Value),
-      attMotorSC2F: parseFloat(d?.Parameter_2084?.Value),
-      attMotorSB6A: parseFloat(d?.Parameter_2085?.Value),
-      attMotorSR2L: parseFloat(d?.Parameter_2086?.Value),
-      attMotorSR2R: parseFloat(d?.Parameter_2087?.Value),
-      attMotorSR1L: parseFloat(d?.Parameter_2088?.Value),
-      attMotorSR1R: parseFloat(d?.Parameter_2089?.Value),
-    };
-
-    const events = {
-      liftoff:     Number(parseFloat(d?.Parameter_2046?.Value)) > 0 || Number(parseFloat(d?.Parameter_2026?.Value)) > 0,
-      icpsBurn:    Number(parseFloat(d?.Parameter_2100?.Value)) > 0 || Number(parseFloat(d?.Parameter_2045?.Value)) > 0,
-      primaryBurn: Number(parseFloat(d?.Parameter_2048?.Value)) > 0 || Number(parseFloat(d?.Parameter_2049?.Value)) > 0,
-      srbSep:      Number(parseFloat(d?.Parameter_2043?.Value)) > 0,
-      icpsSep:     Number(parseFloat(d?.Parameter_2040?.Value)) > 0 || Number(parseFloat(d?.Parameter_2041?.Value)) > 0 || Number(parseFloat(d?.Parameter_2042?.Value)) > 0,
-      smSep:       Number(parseFloat(d?.Parameter_2028?.Value)) > 0 || Number(parseFloat(d?.Parameter_2029?.Value)) > 0
-    };
-
-    return {
-      x,y,z,vx,vy,vz,
-      ed: Math.max(0, earthR - 6371),
-      md,
-      vel: Math.sqrt(vx*vx + vy*vy + vz*vz),
-      comm: earthR / 299792.458,
-      metSec: Number.isFinite(metSec) ? metSec : null,
-      launchUnix: Number.isFinite(launchUnix) ? launchUnix : null,
-      qx: Number.isFinite(qx) ? qx : null,
-      qy: Number.isFinite(qy) ? qy : null,
-      qz: Number.isFinite(qz) ? qz : null,
-      qw: Number.isFinite(qw) ? qw : null,
-      saw,
-      thrusters: thrusterMap,
-      events
-    };
-  } catch {
-    return null;
-  }
-}
-
-async function tryAROW() {
-  const now = Date.now();
-  if (now - lastAROWFetch < 55000) return false;
-  lastAROWFetch = now;
-
-  try {
-    const listRes = await fetch(AROW_BUCKET, { signal: AbortSignal.timeout(10000) });
-    if (!listRes.ok) throw new Error('list');
-    const list = await listRes.json();
-    if (!list.items?.length) throw new Error('empty');
-
-    list.items.sort((a,b) => new Date(b.updated) - new Date(a.updated));
-
-    let chosen = null;
-    let live = null;
-
-    for (const item of list.items) {
-      try {
-        const txtRes = await fetch(item.mediaLink, { signal: AbortSignal.timeout(10000) });
-        if (!txtRes.ok) continue;
-        const parsed = decodeAROWJson(await txtRes.text());
-        if (!parsed) continue;
-        chosen = item;
-        live = parsed;
-        break;
-      } catch {}
-    }
-
-    if (!chosen || !live) throw new Error('parse');
-
-    const t = new Date();
-    mergePoint({ t, x:live.x, y:live.y, vx:live.vx, vy:live.vy });
-
-    liveNumerics = {
-      active:true,
-      ed:live.ed, md:live.md, vel:live.vel, comm:live.comm,
-      metSec:live.metSec, launchUnix:live.launchUnix,
-      qx:live.qx, qy:live.qy, qz:live.qz, qw:live.qw,
-      saw:live.saw,
-      thrusters:live.thrusters,
-      events:live.events
-    };
-
-    setSource('AROW', chosen.name?.split('/').pop() || '');
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-const HORIZONS_IDS = ['-64', '-65'];
-
-function parseHorizons(text) {
-  const vecs = [];
-  let inData = false;
-  for (const raw of text.split('\n')) {
-    const l = raw.trim();
-    if (l.includes('$$SOE')) { inData = true; continue; }
-    if (l.includes('$$EOE')) break;
-    if (!inData || !l) continue;
-    const p = l.split(/\s+/);
-    if (p.length >= 7 && !isNaN(p[0])) {
-      const jd = parseFloat(p[0]);
-      const t  = new Date((jd - 2440587.5) * 86400000);
-      vecs.push({ t, x:parseFloat(p[1]), y:parseFloat(p[2]), vx:parseFloat(p[4]), vy:parseFloat(p[5]) });
-    }
-  }
-  return vecs;
-}
-
-async function tryHorizons() {
-  const now = Date.now();
-  if (now - lastHorizonsFetch < 290000) return false;
-  lastHorizonsFetch = now;
-
-  const start = new Date();
-  const stop  = new Date(start.getTime() + 2 * 3600 * 1000);
-  const fmt   = d => d.toISOString().slice(0,16).replace('T',' ');
-
-  for (const id of HORIZONS_IDS) {
-    try {
-      const params = new URLSearchParams({
-        format:'text', COMMAND:`'${id}'`, OBJ_DATA:'NO', MAKE_EPHEM:'YES', EPHEM_TYPE:'VECTORS',
-        CENTER:'500@399', START_TIME:fmt(start), STOP_TIME:fmt(stop), STEP_SIZE:'5 m',
-        VEC_TABLE:'2', REF_PLANE:'ECLIPTIC', REF_SYSTEM:'J2000', VEC_CORR:'NONE',
-        OUT_UNITS:'KM-S', CSV_FORMAT:'YES',
-      });
-      const url = 'https://ssd.jpl.nasa.gov/api/horizons.api?' + params;
-      const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
-      if (!res.ok) continue;
-      const text = await res.text();
-      if (text.includes('No ephemeris')) continue;
-      const vecs = parseHorizons(text);
-      if (vecs.length < 3) continue;
-      for (const v of vecs) mergePoint(v);
-      stateVectors.sort((a,b) => a.t - b.t);
-      setSource('HORIZONS', `${vecs.length} pts · ID ${id}`);
-      liveNumerics.active = false;
-      return true;
-    } catch {}
-  }
-  return false;
-}
-
-const OEM_URLS = [
+const SRC={
+  PHYSICS:{label:'PHYSICS MODEL',color:'rgba(180,120,255,.24)',priority:0},
+  OEM:{label:'NASA OEM FILE',color:'rgba(140,220,140,.50)',priority:1},
+  AROW:{label:'NASA AROW LIVE',color:'rgba(100,255,180,.80)',priority:3},
+};
+let activeSource='PHYSICS';
+let lastAROWFetch=0,lastOEMFetch=0;
+const AROW_BUCKET='https://storage.googleapis.com/storage/v1/b/p-2-cen1/o?prefix=October%2F1%2FOctober&maxResults=6';
+const OEM_URLS=[
   'https://www.nasa.gov/wp-content/uploads/2026/04/artemis-ii-ephemeris.txt',
-  'https://www.nasa.gov/wp-content/uploads/2026/04/Artemis_II_OEM.txt',
+  'https://www.nasa.gov/wp-content/uploads/2026/04/Artemis_II_OEM.txt'
 ];
 
-function parseOEM(text) {
-  const vecs = []; let inData = false;
-  for (const raw of text.split('\n')) {
-    const l = raw.trim();
-    if (l === 'DATA_START') { inData = true; continue; }
-    if (l === 'DATA_STOP')  { inData = false; continue; }
-    if (!inData || !l) continue;
-    const p = l.split(/\s+/);
-    if (p.length >= 7) {
-      const t = new Date(p[0]);
-      if (!isNaN(t)) vecs.push({ t, x:+p[1], y:+p[2], vx:+p[4], vy:+p[5] });
+function setSource(key,extra=''){
+  activeSource=key;
+  const el=document.getElementById('srcBadge');
+  if(el){el.textContent=SRC[key].label+(extra?' · '+extra:'');el.style.color=SRC[key].color;}
+}
+
+function decodeAROWJson(text){
+  try{
+    const d=JSON.parse(text);
+    const xFt=parseFloat(d?.Parameter_2003?.Value),yFt=parseFloat(d?.Parameter_2004?.Value),zFt=parseFloat(d?.Parameter_2005?.Value);
+    const vxFt=parseFloat(d?.Parameter_2009?.Value),vyFt=parseFloat(d?.Parameter_2010?.Value),vzFt=parseFloat(d?.Parameter_2011?.Value);
+    if([xFt,yFt,zFt,vxFt,vyFt,vzFt].some(v=>!Number.isFinite(v)))return null;
+    const F=0.0003048;
+    const x=xFt*F,y=yFt*F,z=zFt*F,vx=vxFt*F,vy=vyFt*F,vz=vzFt*F;
+    const earthR=Math.sqrt(x*x+y*y+z*z);
+    const moon=getMoonPos(new Date());
+    const md=Math.sqrt((x-moon.x)**2+(y-moon.y)**2+z*z);
+    const qx=parseFloat(d?.Parameter_2012?.Value),qy=parseFloat(d?.Parameter_2013?.Value),qz=parseFloat(d?.Parameter_2014?.Value),qw=parseFloat(d?.Parameter_2015?.Value);
+    const metSec=parseFloat(d?.Parameter_5001?.Value);
+    const saw=[0,1,2,3,4,5,6,7].map(i=>parseFloat(d?.[`Parameter_500${i+2}`]?.Value));
+    const tkeys=['SD5A','SR4R','SR3L','SR3R','SD6A','SD5F','SD6F','SA3F','SB5F','SA3A','SA4F','SA4A','SC1F','SC1A','SC2A','SR4L','SB5A','SB6F','SC2F','SB6A','SR2L','SR2R','SR1L','SR1R'];
+    const thr={};
+    tkeys.forEach((k,i)=>thr[`attMotor${k}`]=parseFloat(d?.[`Parameter_20${66+i}`]?.Value));
+    const events={
+      liftoff:Number(parseFloat(d?.Parameter_2046?.Value))>0||Number(parseFloat(d?.Parameter_2026?.Value))>0,
+      icpsBurn:Number(parseFloat(d?.Parameter_2100?.Value))>0,
+      primaryBurn:Number(parseFloat(d?.Parameter_2048?.Value))>0,
+      srbSep:Number(parseFloat(d?.Parameter_2043?.Value))>0,
+      icpsSep:Number(parseFloat(d?.Parameter_2040?.Value))>0,
+      smSep:Number(parseFloat(d?.Parameter_2028?.Value))>0,
+    };
+    return{x,y,z,vx,vy,vz,ed:Math.max(0,earthR-6371),md,vel:Math.sqrt(vx*vx+vy*vy+vz*vz),comm:earthR/299792.458,metSec:Number.isFinite(metSec)?metSec:null,qx:Number.isFinite(qx)?qx:null,qy:Number.isFinite(qy)?qy:null,qz:Number.isFinite(qz)?qz:null,qw:Number.isFinite(qw)?qw:null,saw,thrusters:thr,events};
+  }catch{return null;}
+}
+
+async function tryAROW(){
+  const now=Date.now();
+  if(now-lastAROWFetch<55000)return false;
+  lastAROWFetch=now;
+  try{
+    const listRes=await fetch(AROW_BUCKET,{signal:AbortSignal.timeout(10000)});
+    if(!listRes.ok)throw new Error();
+    const list=await listRes.json();
+    if(!list.items?.length)throw new Error();
+    list.items.sort((a,b)=>new Date(b.updated)-new Date(a.updated));
+    for(const item of list.items){
+      try{
+        const txtRes=await fetch(item.mediaLink,{signal:AbortSignal.timeout(10000)});
+        if(!txtRes.ok)continue;
+        const live=decodeAROWJson(await txtRes.text());
+        if(!live)continue;
+        const t=new Date();
+        mergePoint({t,x:live.x,y:live.y,vx:live.vx,vy:live.vy});
+        liveNumerics={active:true,ed:live.ed,md:live.md,vel:live.vel,comm:live.comm,metSec:live.metSec,qx:live.qx,qy:live.qy,qz:live.qz,qw:live.qw,saw:live.saw,thrusters:live.thrusters,events:live.events};
+        setSource('AROW',item.name?.split('/').pop()||'');
+        return true;
+      }catch{}
     }
+    throw new Error();
+  }catch{return false;}
+}
+
+function parseOEM(text){
+  const vecs=[];let inData=false;
+  for(const raw of text.split('\n')){
+    const l=raw.trim();
+    if(l==='DATA_START'){inData=true;continue;}
+    if(l==='DATA_STOP'){inData=false;continue;}
+    if(!inData||!l)continue;
+    const p=l.split(/\s+/);
+    if(p.length>=7){const t=new Date(p[0]);if(!isNaN(t))vecs.push({t,x:+p[1],y:+p[2],vx:+p[4],vy:+p[5]});}
   }
   return vecs;
 }
-
-async function tryOEM() {
-  if (oemLoaded) return false;
-  const now = Date.now();
-  if (now - lastOEMFetch < 290000) return false;
-  lastOEMFetch = now;
-  for (const url of OEM_URLS) {
-    try {
-      const r = await fetch(PROXY + encodeURIComponent(url), { signal: AbortSignal.timeout(9000) });
-      const d = await r.json();
-      const vecs = parseOEM(d.contents || '');
-      if (vecs.length > 10) {
-        stateVectors = vecs;
-        oemLoaded = true;
-        setSource('OEM', `${vecs.length} pts`);
-        return true;
-      }
-    } catch {}
+async function tryOEM(){
+  if(oemLoaded)return false;
+  const now=Date.now();
+  if(now-lastOEMFetch<290000)return false;
+  lastOEMFetch=now;
+  for(const url of OEM_URLS){
+    try{
+      const r=await fetch(PROXY+encodeURIComponent(url),{signal:AbortSignal.timeout(9000)});
+      const d=await r.json();
+      const v=parseOEM(d.contents||'');
+      if(v.length>10){stateVectors=v;oemLoaded=true;setSource('OEM',`${v.length} pts`);return true;}
+    }catch{}
   }
   return false;
 }
-
-function mergePoint(pt) {
-  const ts = pt.t.getTime();
-  const idx = stateVectors.findIndex(v => Math.abs(v.t.getTime() - ts) < 30000);
-  if (idx >= 0) stateVectors[idx] = pt;
-  else {
-    stateVectors.push(pt);
-    stateVectors.sort((a,b) => a.t.getTime() - b.t.getTime());
-  }
+function mergePoint(pt){
+  const ts=pt.t.getTime();
+  const idx=stateVectors.findIndex(v=>Math.abs(v.t.getTime()-ts)<30000);
+  if(idx>=0)stateVectors[idx]=pt;
+  else{stateVectors.push(pt);stateVectors.sort((a,b)=>a.t.getTime()-b.t.getTime());}
 }
-
-async function refreshSources() {
-  const arowOk = await tryAROW();
-  if (arowOk) return;
-  const cur = SRC[activeSource].priority;
-  if (cur < SRC.HORIZONS.priority) {
-    const hOk = await tryHorizons();
-    if (hOk) return;
-  }
-  if (cur < SRC.OEM.priority) {
-    const oemOk = await tryOEM();
-    if (oemOk) return;
-  }
-  if (activeSource === 'PHYSICS') setSource('PHYSICS');
+async function refreshSources(){
+  const ok=await tryAROW();
+  if(ok)return;
+  await tryOEM();
+  if(activeSource==='PHYSICS')setSource('PHYSICS');
 }
+setTimeout(()=>tryOEM(),1000);
+setTimeout(()=>tryAROW(),4000);
+setInterval(refreshSources,30000);
 
-setTimeout(() => tryOEM(),      1000);
-setTimeout(() => tryHorizons(), 3000);
-setTimeout(() => tryAROW(),     5000);
-setInterval(refreshSources,    30000);
-
-function quatToEuler(qx, qy, qz, qw) {
-  if (![qx,qy,qz,qw].every(v => Number.isFinite(v))) return null;
-
-  const sinr_cosp = 2 * (qw * qx + qy * qz);
-  const cosr_cosp = 1 - 2 * (qx * qx + qy * qy);
-  const roll = Math.atan2(sinr_cosp, cosr_cosp);
-
-  const sinp = 2 * (qw * qy - qz * qx);
-  const pitch = Math.abs(sinp) >= 1 ? Math.sign(sinp) * Math.PI / 2 : Math.asin(sinp);
-
-  const siny_cosp = 2 * (qw * qz + qx * qy);
-  const cosy_cosp = 1 - 2 * (qy * qy + qz * qz);
-  const yaw = Math.atan2(siny_cosp, cosy_cosp);
-
-  return {
-    pitch: pitch * 180 / Math.PI,
-    yaw: yaw * 180 / Math.PI,
-    roll: roll * 180 / Math.PI
-  };
+function quatToEuler(qx,qy,qz,qw){
+  if(![qx,qy,qz,qw].every(v=>Number.isFinite(v)))return null;
+  const sinr=2*(qw*qx+qy*qz),cosr=1-2*(qx*qx+qy*qy),roll=Math.atan2(sinr,cosr);
+  const sinp=2*(qw*qy-qz*qx),pitch=Math.abs(sinp)>=1?Math.sign(sinp)*Math.PI/2:Math.asin(sinp);
+  const siny=2*(qw*qz+qx*qy),cosy=1-2*(qy*qy+qz*qz),yaw=Math.atan2(siny,cosy);
+  return{pitch:pitch*180/Math.PI,yaw:yaw*180/Math.PI,roll:roll*180/Math.PI};
 }
-
-function updateAttitudePanel() {
-  const {qx,qy,qz,qw} = liveNumerics;
-  document.getElementById('qX').textContent = Number.isFinite(qx) ? qx.toFixed(4) : '—';
-  document.getElementById('qY').textContent = Number.isFinite(qy) ? qy.toFixed(4) : '—';
-  document.getElementById('qZ').textContent = Number.isFinite(qz) ? qz.toFixed(4) : '—';
-  document.getElementById('qW').textContent = Number.isFinite(qw) ? qw.toFixed(4) : '—';
-
-  const e = quatToEuler(qx,qy,qz,qw);
-  document.getElementById('attPitch').textContent = e ? `${e.pitch.toFixed(1)}°` : '—';
-  document.getElementById('attYaw').textContent   = e ? `${e.yaw.toFixed(1)}°` : '—';
-  document.getElementById('attRoll').textContent  = e ? `${e.roll.toFixed(1)}°` : '—';
+function updateAttitude(){
+  const L=liveNumerics;
+  document.getElementById('qX').textContent=Number.isFinite(L.qx)?L.qx.toFixed(4):'—';
+  document.getElementById('qY').textContent=Number.isFinite(L.qy)?L.qy.toFixed(4):'—';
+  document.getElementById('qZ').textContent=Number.isFinite(L.qz)?L.qz.toFixed(4):'—';
+  document.getElementById('qW').textContent=Number.isFinite(L.qw)?L.qw.toFixed(4):'—';
+  const e=quatToEuler(L.qx,L.qy,L.qz,L.qw);
+  document.getElementById('attPitch').textContent=e?`${e.pitch.toFixed(1)}°`:'—';
+  document.getElementById('attYaw').textContent=e?`${e.yaw.toFixed(1)}°`:'—';
+  document.getElementById('attRoll').textContent=e?`${e.roll.toFixed(1)}°`:'—';
 }
-
-function updateSolarPanel() {
-  const s = liveNumerics.saw || [];
-  const fmt = (a,b) => Number.isFinite(a) && Number.isFinite(b) ? `${a.toFixed(1)}° / ${b.toFixed(1)}°` : '—';
-  document.getElementById('saw1').textContent = fmt(s[0], s[4]);
-  document.getElementById('saw2').textContent = fmt(s[1], s[5]);
-  document.getElementById('saw3').textContent = fmt(s[2], s[6]);
-  document.getElementById('saw4').textContent = fmt(s[3], s[7]);
+function updateSolar(){
+  const s=liveNumerics.saw||[];
+  const fmt=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)?`${a.toFixed(1)}° / ${b.toFixed(1)}°`:'—';
+  document.getElementById('saw1').textContent=fmt(s[0],s[4]);
+  document.getElementById('saw2').textContent=fmt(s[1],s[5]);
+  document.getElementById('saw3').textContent=fmt(s[2],s[6]);
+  document.getElementById('saw4').textContent=fmt(s[3],s[7]);
 }
-
-function initThrusterPanel() {
-  const grid = document.getElementById('thrusterGrid');
-  grid.innerHTML = '';
-  for (const key of THRUSTER_KEYS) {
-    const div = document.createElement('div');
-    div.className = 'thruster';
-    div.id = `thr_${key}`;
-    div.innerHTML = `<div class="thruster-name">${key.replace('attMotor','')}</div><div class="thruster-val">—</div>`;
+function initThrusters(){
+  const grid=document.getElementById('thrusterGrid');grid.innerHTML='';
+  for(const key of THRUSTER_KEYS){
+    const div=document.createElement('div');
+    div.className='thruster';div.id=`thr_${key}`;
+    div.innerHTML=`<div class="thruster-name">${key.replace('attMotor','')}</div><div class="thruster-val">—</div>`;
     grid.appendChild(div);
   }
 }
-initThrusterPanel();
-
-function updateThrusterPanel() {
-  const thr = liveNumerics.thrusters || {};
-  for (const key of THRUSTER_KEYS) {
-    const el = document.getElementById(`thr_${key}`);
-    if (!el) continue;
-    const val = thr[key];
-    const label = el.querySelector('.thruster-val');
-    if (!Number.isFinite(val)) {
-      el.className = 'thruster';
-      label.textContent = '—';
-      continue;
-    }
-    label.textContent = val.toFixed(2);
-    el.className = 'thruster';
-    if (Math.abs(val) > 0.75) el.classList.add('active');
-    else if (Math.abs(val) > 0.25) el.classList.add('warn');
+initThrusters();
+function updateThrusters(){
+  const thr=liveNumerics.thrusters||{};
+  for(const key of THRUSTER_KEYS){
+    const el=document.getElementById(`thr_${key}`);if(!el)continue;
+    const val=thr[key],label=el.querySelector('.thruster-val');
+    if(!Number.isFinite(val)){el.className='thruster';label.textContent='—';continue;}
+    label.textContent=val.toFixed(2);el.className='thruster';
+    if(Math.abs(val)>.75)el.classList.add('active');
+    else if(Math.abs(val)>.25)el.classList.add('warn');
   }
 }
-
-function setDot(id, on, warn=false) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.className = 'event-dot';
-  if (warn) el.classList.add('warn');
-  else if (on) el.classList.add('on');
+function setDot(id,on,warn=false){
+  const el=document.getElementById(id);if(!el)return;
+  el.className='event-dot';if(warn)el.classList.add('warn');else if(on)el.classList.add('on');
+}
+function updateEvents(){
+  const e=liveNumerics.events||{};
+  setDot('evtLiftoff',!!e.liftoff);
+  setDot('evtICPSBurn',!!e.icpsBurn);
+  setDot('evtPrimaryBurn',!!e.primaryBurn);
+  setDot('evtSRBSep',!!e.srbSep);
+  setDot('evtICPSSep',!!e.icpsSep);
+  setDot('evtSMSep',!!e.smSep);
 }
 
-function updateEventPanel() {
-  const e = liveNumerics.events || {};
-  setDot('evtLiftoff', !!e.liftoff);
-  setDot('evtICPSBurn', !!e.icpsBurn, false);
-  setDot('evtPrimaryBurn', !!e.primaryBurn, false);
-  setDot('evtSRBSep', !!e.srbSep);
-  setDot('evtICPSSep', !!e.icpsSep);
-  setDot('evtSMSep', !!e.smSep);
-}
-
-const canvas = document.getElementById('mapCanvas');
-const ctx    = canvas.getContext('2d');
-let stars=null, sweepAngle=0, animPos=null;
-const SMOOTH = 0.06;
+const canvas=document.getElementById('mapCanvas');
+const ctx=canvas.getContext('2d');
+let stars=null;
 
 function buildStars(w,h){
   const s=[];
   for(let i=0;i<480;i++){
-    s.push({
-      x:Math.random()*w,
-      y:Math.random()*h,
-      r:Math.random()*1.35+.18,
-      a:.07+Math.random()*.62,
-      warm:Math.random()>.72
-    });
+    s.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.3+.18,a:.06+Math.random()*.60,warm:Math.random()>.70,purple:Math.random()>.85});
   }
   return s;
 }
+new ResizeObserver(()=>{
+  const r=document.getElementById('mapWrap').getBoundingClientRect();
+  const w=Math.round(r.width)||400,h=Math.round(r.height)||260;
+  if(canvas.width===w&&canvas.height===h)return;
+  canvas.width=w;canvas.height=h;stars=buildStars(w,h);
+}).observe(document.getElementById('mapWrap'));
 
-const mapWrap = document.getElementById('mapWrap');
-const ro = new ResizeObserver(() => {
-  const r = mapWrap.getBoundingClientRect();
-  const w = Math.round(r.width)||400;
-  const h = Math.round(r.height)||260;
-  if(canvas.width===w && canvas.height===h) return;
-  canvas.width=w;
-  canvas.height=h;
-  stars=buildStars(w,h);
-});
-ro.observe(mapWrap);
-
-const roView = new ResizeObserver(updateViewport);
-roView.observe(aspectBox);
-frontImg.addEventListener('load', updateViewport);
-backImg.addEventListener('load', updateViewport);
-updateViewport();
-
-function w2s(x,y,sc,ox,oy){return{sx:ox+x*sc,sy:oy-y*sc};}
+const w2s=(x,y,sc,ox,oy)=>({sx:ox+x*sc,sy:oy-y*sc});
 
 function drawOrion(cx,cy,angle){
-  ctx.save();
-  ctx.translate(cx,cy);
-  ctx.rotate(angle+Math.PI/2);
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(angle+Math.PI/2);
+  const halo=ctx.createRadialGradient(0,0,0,0,0,40);
+  halo.addColorStop(0,'rgba(180,80,255,.24)');halo.addColorStop(.5,'rgba(140,60,255,.08)');halo.addColorStop(1,'transparent');
+  ctx.fillStyle=halo;ctx.beginPath();ctx.arc(0,0,40,0,Math.PI*2);ctx.fill();
 
-  const halo=ctx.createRadialGradient(0,0,0,0,0,36);
-  halo.addColorStop(0,'rgba(100,200,255,.20)');
-  halo.addColorStop(1,'transparent');
-  ctx.fillStyle=halo;
-  ctx.beginPath();
-  ctx.arc(0,0,36,0,Math.PI*2);
-  ctx.fill();
-
-  for(const p of [
-    {dx:-16,dy:-10,rot:-.62},{dx:16,dy:-10,rot:.62},
-    {dx:-16,dy:10,rot:.62},{dx:16,dy:10,rot:-.62}
-  ]){
-    ctx.save();
-    ctx.translate(p.dx,p.dy);
-    ctx.rotate(p.rot);
-    ctx.fillStyle='rgba(40,100,180,.22)';
-    ctx.strokeStyle='rgba(120,190,255,.50)';
-    ctx.lineWidth=.8;
-    ctx.fillRect(-11,-4.5,22,9);
-    ctx.strokeRect(-11,-4.5,22,9);
+  for(const p of [{dx:-16,dy:-10,rot:-.62},{dx:16,dy:-10,rot:.62},{dx:-16,dy:10,rot:.62},{dx:16,dy:10,rot:-.62}]){
+    ctx.save();ctx.translate(p.dx,p.dy);ctx.rotate(p.rot);
+    ctx.fillStyle='rgba(120,40,200,.22)';ctx.strokeStyle='rgba(200,140,255,.55)';ctx.lineWidth=.8;
+    ctx.fillRect(-11,-4.5,22,9);ctx.strokeRect(-11,-4.5,22,9);
+    ctx.strokeStyle='rgba(160,100,255,.30)';ctx.lineWidth=.35;
+    for(let xi=-5;xi<=5;xi+=5){ctx.beginPath();ctx.moveTo(xi,-4.5);ctx.lineTo(xi,4.5);ctx.stroke();}
+    ctx.beginPath();ctx.moveTo(-11,0);ctx.lineTo(11,0);ctx.stroke();
     ctx.restore();
   }
 
-  const smg=ctx.createLinearGradient(-7,4,7,18);
-  smg.addColorStop(0,'#1a2e45');
-  smg.addColorStop(1,'#080f1a');
-  ctx.fillStyle=smg;
-  ctx.strokeStyle='rgba(120,180,255,.28)';
-  ctx.lineWidth=.7;
-  ctx.beginPath();
-  ctx.roundRect(-7,4,14,14,2);
-  ctx.fill();
-  ctx.stroke();
+  const smg=ctx.createLinearGradient(-7,4,7,18);smg.addColorStop(0,'#1a0e30');smg.addColorStop(1,'#080418');
+  ctx.fillStyle=smg;ctx.strokeStyle='rgba(180,100,255,.30)';ctx.lineWidth=.7;
+  ctx.beginPath();ctx.roundRect(-7,4,14,14,2);ctx.fill();ctx.stroke();
 
   const bg2=ctx.createLinearGradient(-8,-15,8,6);
-  bg2.addColorStop(0,'#d8eeff');
-  bg2.addColorStop(.5,'#9ab8d8');
-  bg2.addColorStop(1,'#5a7a98');
-  ctx.fillStyle=bg2;
-  ctx.strokeStyle='rgba(160,210,255,.45)';
-  ctx.lineWidth=.9;
-  ctx.beginPath();
-  ctx.roundRect(-8,-15,16,22,5);
-  ctx.fill();
-  ctx.stroke();
+  bg2.addColorStop(0,'#e8d8ff');bg2.addColorStop(.5,'#b090d8');bg2.addColorStop(1,'#6a489a');
+  ctx.fillStyle=bg2;ctx.strokeStyle='rgba(200,140,255,.50)';ctx.lineWidth=.9;
+  ctx.beginPath();ctx.roundRect(-8,-15,16,22,5);ctx.fill();ctx.stroke();
 
-  const ng=ctx.createLinearGradient(0,-27,0,-12);
-  ng.addColorStop(0,'#f0faff');
-  ng.addColorStop(1,'#8ab4d0');
-  ctx.fillStyle=ng;
-  ctx.beginPath();
-  ctx.moveTo(0,-28);
-  ctx.lineTo(8,-13);
-  ctx.lineTo(-8,-13);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
+  const ng=ctx.createLinearGradient(0,-27,0,-12);ng.addColorStop(0,'#f8f0ff');ng.addColorStop(1,'#9868c8');
+  ctx.fillStyle=ng;ctx.beginPath();ctx.moveTo(0,-28);ctx.lineTo(8,-13);ctx.lineTo(-8,-13);ctx.closePath();ctx.fill();ctx.stroke();
 
+  ctx.fillStyle='rgba(200,140,255,.85)';ctx.beginPath();ctx.arc(0,-6,2.8,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.65)';ctx.beginPath();ctx.arc(-1,-7,1.1,0,Math.PI*2);ctx.fill();
+
+  const eng=ctx.createRadialGradient(0,20,0,0,20,9);
+  eng.addColorStop(0,'rgba(255,140,40,.32)');eng.addColorStop(1,'transparent');
+  ctx.fillStyle=eng;ctx.beginPath();ctx.arc(0,20,9,0,Math.PI*2);ctx.fill();
   ctx.restore();
 }
 
 function drawMap(now){
-  const W=canvas.width,H=canvas.height;
-  if(!W||!H)return;
+  const W=canvas.width,H=canvas.height;if(!W||!H)return;
   ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#000810';
-  ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(2,0,8,.35)';ctx.fillRect(0,0,W,H);
+
+  const nb1=ctx.createRadialGradient(W*.18,H*.22,0,W*.18,H*.22,W*.38);
+  nb1.addColorStop(0,'rgba(80,20,160,.10)');nb1.addColorStop(1,'transparent');
+  ctx.fillStyle=nb1;ctx.fillRect(0,0,W,H);
+  const nb2=ctx.createRadialGradient(W*.82,H*.78,0,W*.82,H*.78,W*.28);
+  nb2.addColorStop(0,'rgba(60,10,120,.07)');nb2.addColorStop(1,'transparent');
+  ctx.fillStyle=nb2;ctx.fillRect(0,0,W,H);
 
   if(stars){
     for(const s of stars){
       ctx.globalAlpha=s.a;
-      ctx.fillStyle=s.warm?'#ffe8c8':'#c8e0ff';
-      ctx.beginPath();
-      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-      ctx.fill();
+      ctx.fillStyle=s.purple?'rgba(200,150,255,.9)':s.warm?'#ffe8c8':'#c8c0ff';
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
     }
     ctx.globalAlpha=1;
   }
@@ -1476,145 +917,103 @@ function drawMap(now){
   const scale=Math.min(W,H)*0.40/Math.sqrt(moon.x**2+moon.y**2);
   const ox=W*0.46,oy=H*0.56;
 
-  ctx.lineWidth=1;
-  ctx.setLineDash([3,7]);
-  for(const[r,col]of[
-    [100000,'rgba(80,160,255,.05)'],
-    [200000,'rgba(80,160,255,.05)'],
-    [384400,'rgba(60,140,255,.07)']
-  ]){
-    const pr=r*scale;
-    ctx.beginPath();
-    ctx.arc(ox,oy,pr,0,Math.PI*2);
-    ctx.strokeStyle=col;
-    ctx.stroke();
+  ctx.lineWidth=1;ctx.setLineDash([3,7]);
+  for(const[r,col]of[[100000,'rgba(160,80,255,.05)'],[200000,'rgba(160,80,255,.05)'],[384400,'rgba(120,60,200,.07)']]){
+    const pr=r*scale;ctx.beginPath();ctx.arc(ox,oy,pr,0,Math.PI*2);ctx.strokeStyle=col;ctx.stroke();
   }
   ctx.setLineDash([]);
 
   const er=Math.min(W,H)*0.11;
   const eg=ctx.createRadialGradient(ox-er*.3,oy-er*.3,er*.04,ox,oy,er);
-  eg.addColorStop(0,'#2a6080');
-  eg.addColorStop(.45,'#143850');
-  eg.addColorStop(1,'#040c18');
-  ctx.beginPath();
-  ctx.arc(ox,oy,er,0,Math.PI*2);
-  ctx.fillStyle=eg;
-  ctx.fill();
+  eg.addColorStop(0,'#3040a0');eg.addColorStop(.45,'#18205a');eg.addColorStop(1,'#040818');
+  ctx.beginPath();ctx.arc(ox,oy,er,0,Math.PI*2);ctx.fillStyle=eg;ctx.fill();
+  ctx.strokeStyle='rgba(120,80,255,.18)';ctx.lineWidth=Math.max(1.5,er*.13);
+  ctx.beginPath();ctx.arc(ox,oy,er+er*.11,0,Math.PI*2);ctx.stroke();
 
-  ctx.strokeStyle='rgba(60,140,255,.20)';
-  ctx.lineWidth=Math.max(1.5,er*.13);
-  ctx.beginPath();
-  ctx.arc(ox,oy,er+er*.11,0,Math.PI*2);
-  ctx.stroke();
+  ctx.save();ctx.beginPath();ctx.arc(ox,oy,er,0,Math.PI*2);ctx.clip();
+  ctx.fillStyle='rgba(40,20,80,.30)';
+  ctx.beginPath();ctx.ellipse(ox-er*.28,oy-er*.08,er*.26,er*.18,.3,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(ox+er*.2,oy+er*.1,er*.16,er*.24,-.35,0,Math.PI*2);ctx.fill();
+  ctx.restore();
 
-  ctx.fillStyle='rgba(120,200,255,.72)';
-  ctx.font=`bold ${Math.max(8,W*.014)}px Share Tech Mono,monospace`;
-  ctx.textAlign='center';
-  ctx.fillText('EARTH',ox,oy-er*1.35);
+  ctx.fillStyle='rgba(200,140,255,.75)';ctx.font=`bold ${Math.max(8,W*.014)}px Share Tech Mono,monospace`;
+  ctx.textAlign='center';ctx.fillText('EARTH',ox,oy-er*1.35);
 
   const ms=w2s(moon.x,moon.y,scale,ox,oy);
   const mr=Math.min(W,H)*0.055;
   const mg=ctx.createRadialGradient(ms.sx-mr*.25,ms.sy-mr*.25,mr*.04,ms.sx,ms.sy,mr);
-  mg.addColorStop(0,'#d0d8e8');
-  mg.addColorStop(.55,'#9098a8');
-  mg.addColorStop(1,'#484e58');
-  ctx.beginPath();
-  ctx.arc(ms.sx,ms.sy,mr,0,Math.PI*2);
-  ctx.fillStyle=mg;
-  ctx.fill();
+  mg.addColorStop(0,'#e0d4f8');mg.addColorStop(.55,'#a090c8');mg.addColorStop(1,'#504860');
+  ctx.beginPath();ctx.arc(ms.sx,ms.sy,mr,0,Math.PI*2);ctx.fillStyle=mg;ctx.fill();
+  ctx.save();ctx.beginPath();ctx.arc(ms.sx,ms.sy,mr,0,Math.PI*2);ctx.clip();
+  const mt=ctx.createLinearGradient(ms.sx-mr,ms.sy,ms.sx+mr*.5,ms.sy);
+  mt.addColorStop(0,'rgba(0,0,0,.42)');mt.addColorStop(.8,'transparent');
+  ctx.fillStyle=mt;ctx.fillRect(ms.sx-mr,ms.sy-mr,mr*2,mr*2);ctx.restore();
+  ctx.fillStyle='rgba(220,180,100,.80)';ctx.font=`bold ${Math.max(8,W*.014)}px Share Tech Mono,monospace`;
+  ctx.textAlign='center';ctx.fillText('MOON',ms.sx,ms.sy-mr*1.58);
 
-  ctx.fillStyle='rgba(220,200,100,.78)';
-  ctx.font=`bold ${Math.max(8,W*.014)}px Share Tech Mono,monospace`;
-  ctx.textAlign='center';
-  ctx.fillText('MOON',ms.sx,ms.sy-mr*1.58);
-
-  ctx.beginPath();
-  let first=true;
-  for(const v of stateVectors){
-    const p=w2s(v.x,v.y,scale,ox,oy);
-    if(first){ctx.moveTo(p.sx,p.sy);first=false;}
-    else ctx.lineTo(p.sx,p.sy);
-  }
-  ctx.strokeStyle='rgba(80,180,255,.055)';
-  ctx.lineWidth=1;
-  ctx.stroke();
+  ctx.beginPath();let first=true;
+  for(const v of stateVectors){const p=w2s(v.x,v.y,scale,ox,oy);if(first){ctx.moveTo(p.sx,p.sy);first=false;}else ctx.lineTo(p.sx,p.sy);}
+  ctx.strokeStyle='rgba(160,80,255,.06)';ctx.lineWidth=1;ctx.stroke();
 
   if(animPos){
     const trailPts=[];
-    for(const v of stateVectors){
-      if(v.t.getTime()>now.getTime())break;
-      trailPts.push(w2s(v.x,v.y,scale,ox,oy));
-    }
+    for(const v of stateVectors){if(v.t.getTime()>now.getTime())break;trailPts.push(w2s(v.x,v.y,scale,ox,oy));}
     const tip=w2s(animPos.x,animPos.y,scale,ox,oy);
     trailPts.push(tip);
-
     if(trailPts.length>1){
       for(let i=1;i<trailPts.length;i++){
         const t_=(i-1)/(trailPts.length-1);
-        const alpha=0.15+t_*0.6;
-        const lw=Math.max(.8,1.2+t_*1.0);
         ctx.beginPath();
         ctx.moveTo(trailPts[i-1].sx,trailPts[i-1].sy);
         ctx.lineTo(trailPts[i].sx,trailPts[i].sy);
-        ctx.strokeStyle=`rgba(100,200,255,${alpha})`;
-        ctx.lineWidth=lw;
+        ctx.strokeStyle=`rgba(${Math.round(100+t_*100)},${Math.round(60+t_*80)},255,${0.14+t_*0.55})`;
+        ctx.lineWidth=Math.max(.8,1.0+t_*1.2);
+        ctx.shadowColor='rgba(160,80,255,.18)';ctx.shadowBlur=3;
         ctx.stroke();
       }
+      ctx.shadowBlur=0;
     }
-
     drawOrion(tip.sx,tip.sy,Math.atan2(animPos.vy,animPos.vx));
-    ctx.fillStyle='rgba(120,200,255,.60)';
-    ctx.font=`${Math.max(6,W*.012)}px Share Tech Mono,monospace`;
-    ctx.textAlign='left';
-    ctx.fillText('◀ ORION',tip.sx+26,tip.sy+2);
+    ctx.fillStyle='rgba(200,140,255,.62)';ctx.font=`${Math.max(6,W*.012)}px Share Tech Mono,monospace`;
+    ctx.textAlign='left';ctx.fillText('◀ ORION',tip.sx+26,tip.sy+2);
   }
 
   sweepAngle+=.014;
-  ctx.strokeStyle='rgba(80,180,255,.07)';
-  ctx.lineWidth=1;
-  ctx.beginPath();
-  ctx.arc(ox,oy,er,sweepAngle,sweepAngle+.42);
-  ctx.stroke();
+  ctx.strokeStyle='rgba(160,80,255,.07)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.arc(ox,oy,er,sweepAngle,sweepAngle+.42);ctx.stroke();
 }
 
 function renderTimeline(elSec){
-  const tl=document.getElementById('tlContainer');
-  if(!tl)return;
-  tl.innerHTML='';
+  const tl=document.getElementById('tlContainer');if(!tl)return;tl.innerHTML='';
   for(let i=0;i<MILESTONES.length;i++){
     const ms=MILESTONES[i],next=MILESTONES[i+1],done=elSec>ms.t,active=done&&(!next||elSec<next.t);
-    const d=document.createElement('div');
-    d.className='tl-item'+(done?' done':'')+(active?' active':'');
+    const d=document.createElement('div');d.className='tl-item'+(done?' done':'')+(active?' active':'');
     d.innerHTML=`<div class="tl-dot"></div><div><div class="tl-name">${ms.label}</div><div class="tl-desc">${ms.desc}</div></div>`;
     tl.appendChild(d);
   }
 }
 
 function tick(){
-  const now = new Date();
-  const L = liveNumerics;
-  const el = (L.active && Number.isFinite(L.metSec)) ? L.metSec : Math.max(0, (now - LAUNCH) / 1000);
-  const prog = Math.min(1, el / DUR);
-  const truePos = interpolate(stateVectors, now);
+  const now=new Date();
+  const L=liveNumerics;
+  const el=(L.active&&Number.isFinite(L.metSec))?L.metSec:Math.max(0,(now-LAUNCH)/1000);
+  const prog=Math.min(1,el/DUR);
+  const truePos=interpolate(stateVectors,now);
 
   if(truePos){
-    if(!animPos){
-      animPos={x:truePos.x,y:truePos.y,vx:truePos.vx,vy:truePos.vy};
-    } else {
+    if(!animPos){animPos={x:truePos.x,y:truePos.y,vx:truePos.vx,vy:truePos.vy};}
+    else{
       animPos.x=lerp(animPos.x,truePos.x,SMOOTH);
       animPos.y=lerp(animPos.y,truePos.y,SMOOTH);
       animPos.vx=lerp(animPos.vx,truePos.vx,SMOOTH);
       animPos.vy=lerp(animPos.vy,truePos.vy,SMOOTH);
     }
-
     drawMap(now);
     const moon=getMoonPos(now);
-
-    const ed  = (L.active && L.ed!=null)   ? L.ed   : Math.sqrt(truePos.x**2+truePos.y**2);
-    const md  = (L.active && L.md!=null)   ? L.md   : Math.sqrt((truePos.x-moon.x)**2+(truePos.y-moon.y)**2);
-    const vel = (L.active && L.vel!=null)  ? L.vel  : Math.sqrt(truePos.vx**2+truePos.vy**2);
-    const comm= (L.active && L.comm!=null) ? L.comm : ed/299792.458;
-
+    const ed=(L.active&&L.ed!=null)?L.ed:Math.sqrt(truePos.x**2+truePos.y**2);
+    const md=(L.active&&L.md!=null)?L.md:Math.sqrt((truePos.x-moon.x)**2+(truePos.y-moon.y)**2);
+    const vel=(L.active&&L.vel!=null)?L.vel:Math.sqrt(truePos.vx**2+truePos.vy**2);
+    const comm=(L.active&&L.comm!=null)?L.comm:ed/299792.458;
     const [pn,pd]=getPhase(ed,md);
 
     document.getElementById('vEd').textContent=fkm(ed);
@@ -1631,7 +1030,7 @@ function tick(){
     document.getElementById('vApogee').textContent=fkm(ed*1.02);
     document.getElementById('vPerigee').textContent=fkm(ed*0.98);
     document.getElementById('vPeriod').textContent=(2*Math.PI*ed/Math.max(vel,.001)/3600).toFixed(1)+'h';
-  } else {
+  }else{
     drawMap(now);
   }
 
@@ -1639,16 +1038,13 @@ function tick(){
   document.getElementById('progFill').style.width=(prog*100)+'%';
   document.getElementById('progPct').textContent=Math.round(prog*100)+'%';
   document.getElementById('daysLeft').textContent=fRem(el);
-
-  updateAttitudePanel();
-  updateSolarPanel();
-  updateThrusterPanel();
-  updateEventPanel();
+  updateAttitude();
+  updateSolar();
+  updateThrusters();
+  updateEvents();
   renderTimeline(el);
-
   requestAnimationFrame(tick);
 }
-
 tick();
 </script>
 </body>
