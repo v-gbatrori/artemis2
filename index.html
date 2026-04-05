@@ -325,27 +325,12 @@ body::after{
               <div class="live-tile">
                 <div class="live-head"><div class="live-dot" style="flex:none"></div>NASA OFFICIAL BROADCAST</div>
                 <div class="live-body">
-                  <iframe id="ytLiveFrame" src="https://www.youtube.com/embed/m3kR2KK8TEs?controls=1&autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1"
+                  <iframe src="https://www.youtube.com/embed/m3kR2KK8TEs?controls=1&autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1"
                     title="Artemis II NASA Live"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowfullscreen></iframe>
                 </div>
                 <div class="live-foot">NASA TV · <a href="https://www.youtube.com/watch?v=m3kR2KK8TEs" target="_blank">Open on YouTube ↗</a></div>
-                <button id="ytReloadBtn" type="button" style="margin:.18vw .38vw .3vw;background:rgba(255,255,255,.04);border:1px solid rgba(255,90,90,.22);color:#ff8f8f;border-radius:.16vw;padding:.18vw .34vw;font-family:'Share Tech Mono',monospace;font-size:clamp(4px,.28vw,7px);cursor:pointer;">RELOAD LIVE</button>
-              </div>
-
-              <div class="panel met-panel">
-                <div class="ptitle">Navigation</div>
-                <div class="met-big" id="metDisplay">00:00:00</div>
-                <div class="met-lbl">MISSION ELAPSED TIME</div>
-                <div class="divider"></div>
-                <div class="dr"><span class="dl">EARTH DIST</span><span class="dv" id="vEd">—</span></div>
-                <div class="dr"><span class="dl">MOON DIST</span><span class="dv yw" id="vMd">—</span></div>
-                <div class="dr"><span class="dl">VELOCITY</span><span class="dv or" id="vVel">—</span></div>
-                <div class="dr"><span class="dl">COMM DELAY</span><span class="dv bl" id="vComm">—</span></div>
-                <div class="divider"></div>
-                <div class="dr"><span class="dl">PHASE</span><span class="dv bl" id="vPhase" style="font-size:clamp(5px,.60vw,13px)">—</span></div>
-              </div> · <a href="https://www.youtube.com/watch?v=m3kR2KK8TEs" target="_blank">Open on YouTube ↗</a></div>
               </div>
 
               <div class="panel met-panel">
@@ -881,34 +866,6 @@ window.addEventListener('resize', resizeCanvas);
 frontImg.addEventListener('load', resizeCanvas);
 backImg.addEventListener('load', resizeCanvas);
 window.addEventListener('load', resizeCanvas);
-
-function reloadYouTubeLive(){
-  const frame=document.getElementById('ytLiveFrame');
-  if(!frame) return;
-  const base='https://www.youtube.com/embed/m3kR2KK8TEs?controls=1&autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1';
-  frame.src='about:blank';
-  setTimeout(()=>{ frame.src=base + '&t=' + Date.now(); }, 180);
-}
-
-const ytReloadBtn=document.getElementById('ytReloadBtn');
-if(ytReloadBtn){
-  ytReloadBtn.addEventListener('click', reloadYouTubeLive);
-}
-
-let lastYTRefresh=Date.now();
-document.addEventListener('visibilitychange', ()=>{
-  if(!document.hidden && Date.now()-lastYTRefresh>120000){
-    lastYTRefresh=Date.now();
-    reloadYouTubeLive();
-  }
-});
-
-setInterval(()=>{
-  if(!document.hidden){
-    lastYTRefresh=Date.now();
-  }
-}, 30000);
-
 resizeCanvas();
 refreshLiveSources();
 setInterval(refreshLiveSources, 30000);
