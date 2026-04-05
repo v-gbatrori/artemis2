@@ -200,10 +200,17 @@ body::after{
 
 .met-panel{padding:.56vw .48vw}
 .met-big{
-  font-family:'Orbitron',sans-serif;text-align:center;color:var(--c1);
+  font-family:'Share Tech Mono',monospace;
+  font-weight:700;
+  text-align:center;
+  color:var(--c1);
   font-size:clamp(13px,2.0vw,44px);
   text-shadow:0 0 20px rgba(100,200,255,.6),0 0 50px rgba(100,200,255,.2);
-  letter-spacing:.04em;line-height:1;
+  letter-spacing:.02em;
+  line-height:1;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums lining-nums;
+  font-feature-settings:"tnum" 1,"lnum" 1;
 }
 .met-lbl{
   margin-top:.16vw;text-align:center;font-size:clamp(4px,.30vw,7px);
