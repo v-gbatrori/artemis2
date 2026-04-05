@@ -62,7 +62,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
 .dv.yw{color:var(--c4);text-shadow:0 0 8px rgba(255,208,60,.35)}
 .dv.bl{color:var(--c5);text-shadow:0 0 8px rgba(79,195,247,.35)}
 
-/* ── YOUTUBE TILE ── */
 .live-tile{
   aspect-ratio:16/9;
   background:#000813;
@@ -79,7 +78,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
   padding:.26vw .42vw;display:flex;align-items:center;gap:.4vw;
   z-index:3;
 }
-/* ── PLAY OVERLAY — shown before stream starts ── */
 #ytOverlay{
   position:absolute;inset:0;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -120,7 +118,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
   color:rgba(100,180,255,.38);
   letter-spacing:.12em;
 }
-/* countdown ring around play button */
 .yt-ring{
   position:absolute;
   width:clamp(36px,5vw,68px);
@@ -139,7 +136,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
   stroke-dashoffset:157;
   transition:stroke-dashoffset .9s linear;
 }
-/* iframe — stays stable, never recreated */
 #ytFrame{
   position:absolute;inset:0;
   width:100%;height:100%;
@@ -214,13 +210,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
           </div>
 
           <div id="main">
-            <!-- LEFT COL -->
             <div class="col">
-              <!-- YouTube tile with big play button -->
               <div class="live-tile">
                 <div class="live-head"><div class="live-dot" style="flex:none"></div>NASA OFFICIAL BROADCAST</div>
-
-                <!-- OVERLAY with large play button + auto-countdown -->
                 <div id="ytOverlay">
                   <div style="position:relative;display:flex;align-items:center;justify-content:center">
                     <div class="yt-ring"><svg viewBox="0 0 50 50"><circle id="cdRing" cx="25" cy="25" r="24"/></svg></div>
@@ -229,15 +221,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
                   <div class="yt-play-label">PLAY NASA LIVE STREAM</div>
                   <div class="yt-auto-label" id="cdLabel">AUTO-STARTING IN 5s · CLICK TO START NOW</div>
                 </div>
-
-                <!-- iframe — created once, never touched again -->
                 <iframe id="ytFrame"
                   src="about:blank"
                   title="Artemis II NASA Live"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowfullscreen>
                 </iframe>
-
                 <div class="live-foot">NASA TV · <a href="https://www.youtube.com/watch?v=m3kR2KK8TEs" target="_blank">Open on YouTube ↗</a></div>
               </div>
 
@@ -265,7 +254,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
               </div>
             </div>
 
-            <!-- CENTER COL -->
             <div class="col">
               <div class="center-top">
                 <div>
@@ -285,7 +273,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
               </div>
             </div>
 
-            <!-- RIGHT COL -->
             <div class="col">
               <div class="panel">
                 <div class="ptitle">Systems Status</div>
@@ -331,12 +318,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
 <script>
 /* ═══════════════════════════════════════════════
    YOUTUBE AUTOPLAY LOGIC
-   - Show overlay with 5s countdown ring
-   - On click OR countdown end → load iframe ONCE
-   - iframe src set only once → no buffering resets
 ═══════════════════════════════════════════════ */
 const YT_SRC = 'https://www.youtube.com/embed/m3kR2KK8TEs?controls=1&autoplay=1&mute=0&rel=0&modestbranding=1&playsinline=1';
-const AUTO_DELAY = 5; // seconds before auto-start
+const AUTO_DELAY = 5;
 
 const ytOverlay = document.getElementById('ytOverlay');
 const ytFrame   = document.getElementById('ytFrame');
@@ -348,25 +332,19 @@ let cdLeft      = AUTO_DELAY;
 function startStream() {
   if (ytStarted) return;
   ytStarted = true;
-  // Set src ONCE — never touch the iframe again
   ytFrame.src = YT_SRC;
   ytFrame.style.display = 'block';
   ytOverlay.classList.add('hidden');
 }
-
-// Click anywhere on overlay
 ytOverlay.addEventListener('click', startStream);
 
-// Countdown: update ring every second, auto-start at 0
 const cdInterval = setInterval(() => {
   cdLeft--;
   const pct = cdLeft / AUTO_DELAY;
-  // dasharray = 2*pi*24 ≈ 150.8, use 150
   cdRing.style.strokeDashoffset = 150 * pct;
   if (cdLeft <= 0) {
     clearInterval(cdInterval);
     cdLabel.textContent = 'STARTING STREAM...';
-    // Small delay so browser can handle user gesture policy
     setTimeout(startStream, 200);
   } else {
     cdLabel.textContent = `AUTO-STARTING IN ${cdLeft}s · CLICK TO START NOW`;
@@ -455,11 +433,28 @@ function buildPhysics(){
   for(let ms=0;ms<=DUR*1000;ms+=60000){
     const t=new Date(t0+ms),frac=ms/(DUR*1000),moon=getMoonPos(t);
     let x,y,vx=0,vy=0;
-    if(frac<0.04){const a=frac/0.04*3*Math.PI,r=6563+frac*30000;x=r*Math.cos(a);y=r*Math.sin(a);vx=-Math.sqrt(398600/r)*Math.sin(a);vy=Math.sqrt(398600/r)*Math.cos(a);}
-    else if(frac<0.08){const tf=(frac-.04)/.04,r=36000+tf*50000,a=3*Math.PI+tf*.8;x=r*Math.cos(a);y=r*Math.sin(a);vx=8-tf*5;vy=2;}
-    else if(frac<0.44){const tf=(frac-.08)/.36,e=ease(tf);x=lerp(80000*Math.cos(4.6),moon.x*.92,e);y=lerp(80000*Math.sin(4.6),moon.y*.92,e);vx=lerp(3.5,1,tf);vy=vx*.3;}
-    else if(frac<0.58){const tf=(frac-.44)/.14,a=Math.PI+tf*1.6*Math.PI,r=6000+15000*Math.sin(tf*Math.PI);x=moon.x+r*Math.cos(a);y=moon.y+r*Math.sin(a);const sp=2.2+tf*.3;vx=-sp*Math.sin(a);vy=sp*Math.cos(a);}
-    else{const tf=(frac-.58)/.42,e=ease(tf),mn=getMoonPos(t),sx=mn.x+4000*Math.cos(4.712),sy=mn.y+4000*Math.sin(4.712);x=lerp(sx,0,e);y=lerp(sy,0,e);const sp=lerp(1,11,tf),l=Math.sqrt(x*x+y*y)||1;vx=-sp*(x/l);vy=-sp*(y/l);}
+    if(frac<0.04){
+      const a=frac/0.04*3*Math.PI,r=6563+frac*30000;
+      x=r*Math.cos(a);y=r*Math.sin(a);
+      vx=-Math.sqrt(398600/r)*Math.sin(a);vy=Math.sqrt(398600/r)*Math.cos(a);
+    } else if(frac<0.08){
+      const tf=(frac-.04)/.04,r=36000+tf*50000,a=3*Math.PI+tf*.8;
+      x=r*Math.cos(a);y=r*Math.sin(a);vx=8-tf*5;vy=2;
+    } else if(frac<0.44){
+      const tf=(frac-.08)/.36,e=ease(tf);
+      x=lerp(80000*Math.cos(4.6),moon.x*.92,e);
+      y=lerp(80000*Math.sin(4.6),moon.y*.92,e);
+      vx=lerp(3.5,1,tf);vy=vx*.3;
+    } else if(frac<0.58){
+      const tf=(frac-.44)/.14,a=Math.PI+tf*1.6*Math.PI,r=6000+15000*Math.sin(tf*Math.PI);
+      x=moon.x+r*Math.cos(a);y=moon.y+r*Math.sin(a);
+      const sp=2.2+tf*.3;vx=-sp*Math.sin(a);vy=sp*Math.cos(a);
+    } else {
+      const tf=(frac-.58)/.42,e=ease(tf),mn=getMoonPos(t),sx=mn.x+4000*Math.cos(4.712),sy=mn.y+4000*Math.sin(4.712);
+      x=lerp(sx,0,e);y=lerp(sy,0,e);
+      const sp=lerp(1,11,tf),l=Math.sqrt(x*x+y*y)||1;
+      vx=-sp*(x/l);vy=-sp*(y/l);
+    }
     vecs.push({t,x,y,vx,vy});
   }
   return vecs;
@@ -471,16 +466,313 @@ function interpolate(vecs,t){
   if(ts<=vecs[0].t.getTime())return{...vecs[0]};
   if(ts>=vecs[vecs.length-1].t.getTime())return{...vecs[vecs.length-1]};
   let lo=0,hi=vecs.length-1;
-  while(hi-lo>1){const mid=(lo+hi)>>1;if(vecs[mid].t.getTime()<=ts)lo=mid;else hi=mid;}
+  while(hi-lo>1){
+    const mid=(lo+hi)>>1;
+    if(vecs[mid].t.getTime()<=ts) lo=mid;
+    else hi=mid;
+  }
   const a=vecs[lo],b=vecs[hi],f=(ts-a.t.getTime())/(b.t.getTime()-a.t.getTime());
   return{x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,vx:a.vx+(b.vx-a.vx)*f,vy:a.vy+(b.vy-a.vy)*f,t};
 }
 
 let stateVectors = buildPhysics();
 
+/* ═══════════════════════════════════════════════════════════════
+   MULTI-SOURCE TELEMETRY ENGINE
+═══════════════════════════════════════════════ */
+const SRC = {
+  PHYSICS:  { label:'PHYSICS MODEL',     color:'rgba(100,180,255,.22)', priority:0 },
+  OEM:      { label:'NASA OEM FILE',     color:'rgba(120,220,120,.45)', priority:1 },
+  HORIZONS: { label:'JPL HORIZONS LIVE', color:'rgba(255,210,80,.60)',  priority:2 },
+  AROW:     { label:'NASA AROW LIVE',    color:'rgba(80,255,160,.75)',  priority:3 },
+};
+let activeSource = 'PHYSICS';
+
+let liveNumerics = {
+  active:false,
+  ed:null,
+  md:null,
+  vel:null,
+  comm:null,
+  metSec:null,
+  launchUnix:null
+};
+
+let lastAROWFetch     = 0;
+let lastHorizonsFetch = 0;
+let lastOEMFetch      = 0;
+let oemLoaded         = false;
+
+const PROXY = 'https://api.allorigins.win/get?url=';
+
+function setSource(key, extra='') {
+  activeSource = key;
+  const s = SRC[key];
+  const el = document.getElementById('srcBadge');
+  if (el) {
+    el.textContent = s.label + (extra ? ' · ' + extra : '');
+    el.style.color = s.color;
+  }
+}
+
+const AROW_BUCKET = 'https://storage.googleapis.com/storage/v1/b/p-2-cen1/o?prefix=October%2F1%2FOctober&maxResults=6';
+
+function decodeAROWJson(text) {
+  try {
+    const d = JSON.parse(text);
+
+    const xFt  = parseFloat(d?.Parameter_2003?.Value);
+    const yFt  = parseFloat(d?.Parameter_2004?.Value);
+    const zFt  = parseFloat(d?.Parameter_2005?.Value);
+    const vxFt = parseFloat(d?.Parameter_2009?.Value);
+    const vyFt = parseFloat(d?.Parameter_2010?.Value);
+    const vzFt = parseFloat(d?.Parameter_2011?.Value);
+
+    const metSec     = parseFloat(d?.Parameter_5001?.Value);
+    const launchUnix = parseFloat(d?.Parameter_5000?.Value);
+    const earthUtc   = parseFloat(d?.Parameter_5012?.Value);
+
+    if ([xFt,yFt,zFt,vxFt,vyFt,vzFt].some(v => !Number.isFinite(v))) return null;
+
+    const FT_TO_KM = 0.0003048;
+
+    const x  = xFt * FT_TO_KM;
+    const y  = yFt * FT_TO_KM;
+    const z  = zFt * FT_TO_KM;
+    const vx = vxFt * FT_TO_KM;
+    const vy = vyFt * FT_TO_KM;
+    const vz = vzFt * FT_TO_KM;
+
+    const earthR = Math.sqrt(x*x + y*y + z*z);
+    const moon   = getMoonPos(new Date());
+    const md     = Math.sqrt((x-moon.x)**2 + (y-moon.y)**2 + z*z);
+
+    return {
+      x, y, z, vx, vy, vz,
+      ed: Math.max(0, earthR - 6371),
+      md,
+      vel: Math.sqrt(vx*vx + vy*vy + vz*vz),
+      comm: earthR / 299792.458,
+      metSec: Number.isFinite(metSec) ? metSec : null,
+      launchUnix: Number.isFinite(launchUnix) ? launchUnix : null,
+      earthUtc: Number.isFinite(earthUtc) ? earthUtc : null
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function tryAROW() {
+  const now = Date.now();
+  if (now - lastAROWFetch < 55000) return false;
+  lastAROWFetch = now;
+
+  try {
+    const listRes = await fetch(AROW_BUCKET, { signal: AbortSignal.timeout(10000) });
+    if (!listRes.ok) throw new Error('list');
+    const list = await listRes.json();
+    if (!list.items?.length) throw new Error('empty');
+
+    list.items.sort((a,b) => new Date(b.updated) - new Date(a.updated));
+
+    let chosen = null;
+    let live = null;
+
+    for (const item of list.items) {
+      try {
+        const txtRes = await fetch(item.mediaLink, { signal: AbortSignal.timeout(10000) });
+        if (!txtRes.ok) continue;
+        const parsed = decodeAROWJson(await txtRes.text());
+        if (!parsed) continue;
+        chosen = item;
+        live = parsed;
+        break;
+      } catch {}
+    }
+
+    if (!chosen || !live) throw new Error('parse');
+
+    const t = new Date();
+    const pt = { t, x:live.x, y:live.y, vx:live.vx, vy:live.vy };
+    mergePoint(pt);
+
+    liveNumerics = {
+      active:true,
+      ed:live.ed,
+      md:live.md,
+      vel:live.vel,
+      comm:live.comm,
+      metSec:live.metSec,
+      launchUnix:live.launchUnix
+    };
+
+    setSource('AROW', chosen.name?.split('/').pop() || '');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const HORIZONS_IDS = ['-64', '-65'];
+
+function parseHorizons(text) {
+  const vecs = [];
+  let inData = false;
+
+  for (const raw of text.split('\n')) {
+    const l = raw.trim();
+    if (l.includes('$$SOE')) { inData = true; continue; }
+    if (l.includes('$$EOE')) break;
+    if (!inData || !l) continue;
+
+    const p = l.split(/\s+/);
+    if (p.length >= 7 && !isNaN(p[0])) {
+      const jd = parseFloat(p[0]);
+      const t  = new Date((jd - 2440587.5) * 86400000);
+      vecs.push({
+        t,
+        x:  parseFloat(p[1]),
+        y:  parseFloat(p[2]),
+        vx: parseFloat(p[4]),
+        vy: parseFloat(p[5]),
+      });
+    }
+  }
+  return vecs;
+}
+
+async function tryHorizons() {
+  const now = Date.now();
+  if (now - lastHorizonsFetch < 290000) return false;
+  lastHorizonsFetch = now;
+
+  const start = new Date();
+  const stop  = new Date(start.getTime() + 2 * 3600 * 1000);
+  const fmt   = d => d.toISOString().slice(0,16).replace('T',' ');
+
+  for (const id of HORIZONS_IDS) {
+    try {
+      const params = new URLSearchParams({
+        format:     'text',
+        COMMAND:    `'${id}'`,
+        OBJ_DATA:   'NO',
+        MAKE_EPHEM: 'YES',
+        EPHEM_TYPE: 'VECTORS',
+        CENTER:     '500@399',
+        START_TIME: fmt(start),
+        STOP_TIME:  fmt(stop),
+        STEP_SIZE:  '5 m',
+        VEC_TABLE:  '2',
+        REF_PLANE:  'ECLIPTIC',
+        REF_SYSTEM: 'J2000',
+        VEC_CORR:   'NONE',
+        OUT_UNITS:  'KM-S',
+        CSV_FORMAT: 'YES',
+      });
+
+      const url = 'https://ssd.jpl.nasa.gov/api/horizons.api?' + params;
+      const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+      if (!res.ok) continue;
+
+      const text = await res.text();
+      if (text.includes('No ephemeris')) continue;
+
+      const vecs = parseHorizons(text);
+      if (vecs.length < 3) continue;
+
+      for (const v of vecs) mergePoint(v);
+      stateVectors.sort((a,b) => a.t - b.t);
+
+      setSource('HORIZONS', `${vecs.length} pts · ID ${id}`);
+      liveNumerics.active = false;
+      return true;
+    } catch {}
+  }
+  return false;
+}
+
+const OEM_URLS = [
+  'https://www.nasa.gov/wp-content/uploads/2026/04/artemis-ii-ephemeris.txt',
+  'https://www.nasa.gov/wp-content/uploads/2026/04/Artemis_II_OEM.txt',
+];
+
+function parseOEM(text) {
+  const vecs = [];
+  let inData = false;
+  for (const raw of text.split('\n')) {
+    const l = raw.trim();
+    if (l === 'DATA_START') { inData = true; continue; }
+    if (l === 'DATA_STOP')  { inData = false; continue; }
+    if (!inData || !l) continue;
+
+    const p = l.split(/\s+/);
+    if (p.length >= 7) {
+      const t = new Date(p[0]);
+      if (!isNaN(t)) vecs.push({ t, x:+p[1], y:+p[2], vx:+p[4], vy:+p[5] });
+    }
+  }
+  return vecs;
+}
+
+async function tryOEM() {
+  if (oemLoaded) return false;
+
+  const now = Date.now();
+  if (now - lastOEMFetch < 290000) return false;
+  lastOEMFetch = now;
+
+  for (const url of OEM_URLS) {
+    try {
+      const r = await fetch(PROXY + encodeURIComponent(url), { signal: AbortSignal.timeout(9000) });
+      const d = await r.json();
+      const vecs = parseOEM(d.contents || '');
+      if (vecs.length > 10) {
+        stateVectors = vecs;
+        oemLoaded = true;
+        setSource('OEM', `${vecs.length} pts`);
+        return true;
+      }
+    } catch {}
+  }
+  return false;
+}
+
+function mergePoint(pt) {
+  const ts = pt.t.getTime();
+  const idx = stateVectors.findIndex(v => Math.abs(v.t.getTime() - ts) < 30000);
+  if (idx >= 0) stateVectors[idx] = pt;
+  else {
+    stateVectors.push(pt);
+    stateVectors.sort((a,b) => a.t.getTime() - b.t.getTime());
+  }
+}
+
+async function refreshSources() {
+  const arowOk = await tryAROW();
+  if (arowOk) return;
+
+  const cur = SRC[activeSource].priority;
+
+  if (cur < SRC.HORIZONS.priority) {
+    const hOk = await tryHorizons();
+    if (hOk) return;
+  }
+
+  if (cur < SRC.OEM.priority) {
+    const oemOk = await tryOEM();
+    if (oemOk) return;
+  }
+
+  if (activeSource === 'PHYSICS') setSource('PHYSICS');
+}
+
+setTimeout(() => tryOEM(),      1000);
+setTimeout(() => tryHorizons(), 3000);
+setTimeout(() => tryAROW(),     5000);
+setInterval(refreshSources,    30000);
+
 /* ═══════════════════════════════════════════════
-   MAP CANVAS — resized ONLY via ResizeObserver
-   (never inside the animation loop)
+   MAP CANVAS
 ═══════════════════════════════════════════════ */
 const canvas = document.getElementById('mapCanvas');
 const ctx    = canvas.getContext('2d');
@@ -502,7 +794,6 @@ const ro = new ResizeObserver(() => {
 });
 ro.observe(mapWrap);
 
-// Also update viewport on window resize
 const roView = new ResizeObserver(updateViewport);
 roView.observe(aspectBox);
 frontImg.addEventListener('load', updateViewport);
@@ -542,98 +833,158 @@ function drawMap(now){
   if(!W||!H)return;
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle='#000810'; ctx.fillRect(0,0,W,H);
-  if(stars){for(const s of stars){ctx.globalAlpha=s.a;ctx.fillStyle=s.warm?'#ffe8c8':'#c8e0ff';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;}
+
+  if(stars){
+    for(const s of stars){
+      ctx.globalAlpha=s.a;
+      ctx.fillStyle=s.warm?'#ffe8c8':'#c8e0ff';
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+    }
+    ctx.globalAlpha=1;
+  }
+
   const moon=getMoonPos(now);
   const scale=Math.min(W,H)*0.40/Math.sqrt(moon.x**2+moon.y**2);
   const ox=W*0.46,oy=H*0.56;
+
   ctx.lineWidth=1; ctx.setLineDash([3,7]);
   for(const[r,col]of[[100000,'rgba(80,160,255,.05)'],[200000,'rgba(80,160,255,.05)'],[384400,'rgba(60,140,255,.07)']]){
     const pr=r*scale; ctx.beginPath(); ctx.arc(ox,oy,pr,0,Math.PI*2); ctx.strokeStyle=col; ctx.stroke();
   }
   ctx.setLineDash([]);
+
   const er=Math.min(W,H)*0.11;
   const eg=ctx.createRadialGradient(ox-er*.3,oy-er*.3,er*.04,ox,oy,er);
   eg.addColorStop(0,'#2a6080'); eg.addColorStop(.45,'#143850'); eg.addColorStop(1,'#040c18');
   ctx.beginPath(); ctx.arc(ox,oy,er,0,Math.PI*2); ctx.fillStyle=eg; ctx.fill();
   ctx.strokeStyle='rgba(60,140,255,.20)'; ctx.lineWidth=Math.max(1.5,er*.13);
   ctx.beginPath(); ctx.arc(ox,oy,er+er*.11,0,Math.PI*2); ctx.stroke();
+
   ctx.fillStyle='rgba(120,200,255,.72)';
   ctx.font=`bold ${Math.max(8,W*.014)}px Share Tech Mono,monospace`;
   ctx.textAlign='center'; ctx.fillText('EARTH',ox,oy-er*1.35);
+
   const ms=w2s(moon.x,moon.y,scale,ox,oy);
   const mr=Math.min(W,H)*0.055;
   const mg=ctx.createRadialGradient(ms.sx-mr*.25,ms.sy-mr*.25,mr*.04,ms.sx,ms.sy,mr);
   mg.addColorStop(0,'#d0d8e8'); mg.addColorStop(.55,'#9098a8'); mg.addColorStop(1,'#484e58');
   ctx.beginPath(); ctx.arc(ms.sx,ms.sy,mr,0,Math.PI*2); ctx.fillStyle=mg; ctx.fill();
+
   ctx.fillStyle='rgba(220,200,100,.78)';
   ctx.font=`bold ${Math.max(8,W*.014)}px Share Tech Mono,monospace`;
   ctx.textAlign='center'; ctx.fillText('MOON',ms.sx,ms.sy-mr*1.58);
+
   ctx.beginPath(); let first=true;
-  for(const v of stateVectors){const p=w2s(v.x,v.y,scale,ox,oy);if(first){ctx.moveTo(p.sx,p.sy);first=false;}else ctx.lineTo(p.sx,p.sy);}
+  for(const v of stateVectors){
+    const p=w2s(v.x,v.y,scale,ox,oy);
+    if(first){ctx.moveTo(p.sx,p.sy);first=false;}
+    else ctx.lineTo(p.sx,p.sy);
+  }
   ctx.strokeStyle='rgba(80,180,255,.055)'; ctx.lineWidth=1; ctx.stroke();
+
   if(animPos){
     const trailPts=[];
-    for(const v of stateVectors){if(v.t.getTime()>now.getTime())break;trailPts.push(w2s(v.x,v.y,scale,ox,oy));}
+    for(const v of stateVectors){
+      if(v.t.getTime()>now.getTime())break;
+      trailPts.push(w2s(v.x,v.y,scale,ox,oy));
+    }
     const tip=w2s(animPos.x,animPos.y,scale,ox,oy);
     trailPts.push(tip);
+
     if(trailPts.length>1){
       for(let i=1;i<trailPts.length;i++){
         const t_=(i-1)/(trailPts.length-1),alpha=0.15+t_*0.6,lw=Math.max(.8,1.2+t_*1.0);
-        ctx.beginPath();ctx.moveTo(trailPts[i-1].sx,trailPts[i-1].sy);ctx.lineTo(trailPts[i].sx,trailPts[i].sy);
-        ctx.strokeStyle=`rgba(100,200,255,${alpha})`;ctx.lineWidth=lw;ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(trailPts[i-1].sx,trailPts[i-1].sy);
+        ctx.lineTo(trailPts[i].sx,trailPts[i].sy);
+        ctx.strokeStyle=`rgba(100,200,255,${alpha})`;
+        ctx.lineWidth=lw;
+        ctx.stroke();
       }
     }
+
     drawOrion(tip.sx,tip.sy,Math.atan2(animPos.vy,animPos.vx));
     ctx.fillStyle='rgba(120,200,255,.60)';
-    ctx.font=`${Math.max(6,W*.012)}px Share Tech Mono,monospace`; ctx.textAlign='left';
+    ctx.font=`${Math.max(6,W*.012)}px Share Tech Mono,monospace`;
+    ctx.textAlign='left';
     ctx.fillText('◀ ORION',tip.sx+26,tip.sy+2);
   }
+
   sweepAngle+=.014;
-  ctx.strokeStyle='rgba(80,180,255,.07)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.arc(ox,oy,er,sweepAngle,sweepAngle+.42); ctx.stroke();
+  ctx.strokeStyle='rgba(80,180,255,.07)';
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.arc(ox,oy,er,sweepAngle,sweepAngle+.42);
+  ctx.stroke();
 }
 
 function renderTimeline(elSec){
-  const tl=document.getElementById('tlContainer'); if(!tl)return; tl.innerHTML='';
+  const tl=document.getElementById('tlContainer');
+  if(!tl)return;
+  tl.innerHTML='';
   for(let i=0;i<MILESTONES.length;i++){
     const ms=MILESTONES[i],next=MILESTONES[i+1],done=elSec>ms.t,active=done&&(!next||elSec<next.t);
-    const d=document.createElement('div'); d.className='tl-item'+(done?' done':'')+(active?' active':'');
+    const d=document.createElement('div');
+    d.className='tl-item'+(done?' done':'')+(active?' active':'');
     d.innerHTML=`<div class="tl-dot"></div><div><div class="tl-name">${ms.label}</div><div class="tl-desc">${ms.desc}</div></div>`;
     tl.appendChild(d);
   }
 }
 
 function tick(){
-  const now=new Date(),el=Math.max(0,(now-LAUNCH)/1000),prog=Math.min(1,el/DUR);
-  const truePos=interpolate(stateVectors,now);
+  const now = new Date();
+  const L = liveNumerics;
+  const el = (L.active && Number.isFinite(L.metSec))
+    ? L.metSec
+    : Math.max(0, (now - LAUNCH) / 1000);
+
+  const prog = Math.min(1, el / DUR);
+  const truePos = interpolate(stateVectors, now);
+
   if(truePos){
-    if(!animPos){animPos={x:truePos.x,y:truePos.y,vx:truePos.vx,vy:truePos.vy};}
-    else{animPos.x=lerp(animPos.x,truePos.x,SMOOTH);animPos.y=lerp(animPos.y,truePos.y,SMOOTH);animPos.vx=lerp(animPos.vx,truePos.vx,SMOOTH);animPos.vy=lerp(animPos.vy,truePos.vy,SMOOTH);}
+    if(!animPos){
+      animPos={x:truePos.x,y:truePos.y,vx:truePos.vx,vy:truePos.vy};
+    } else {
+      animPos.x=lerp(animPos.x,truePos.x,SMOOTH);
+      animPos.y=lerp(animPos.y,truePos.y,SMOOTH);
+      animPos.vx=lerp(animPos.vx,truePos.vx,SMOOTH);
+      animPos.vy=lerp(animPos.vy,truePos.vy,SMOOTH);
+    }
+
     drawMap(now);
     const moon=getMoonPos(now);
-    const ed=Math.sqrt(truePos.x**2+truePos.y**2);
-    const md=Math.sqrt((truePos.x-moon.x)**2+(truePos.y-moon.y)**2);
-    const vel=Math.sqrt(truePos.vx**2+truePos.vy**2);
+
+    const ed  = (L.active && L.ed!=null)   ? L.ed   : Math.sqrt(truePos.x**2+truePos.y**2);
+    const md  = (L.active && L.md!=null)   ? L.md   : Math.sqrt((truePos.x-moon.x)**2+(truePos.y-moon.y)**2);
+    const vel = (L.active && L.vel!=null)  ? L.vel  : Math.sqrt(truePos.vx**2+truePos.vy**2);
+    const comm= (L.active && L.comm!=null) ? L.comm : ed/299792.458;
+
     const[pn,pd]=getPhase(ed,md);
+
     document.getElementById('vEd').textContent=fkm(ed);
     document.getElementById('vMd').textContent=fkm(md);
     document.getElementById('vVel').textContent=fkms(vel);
-    document.getElementById('vComm').textContent=(ed/299792.458).toFixed(1)+'s';
+    document.getElementById('vComm').textContent=comm.toFixed(1)+'s';
     document.getElementById('vPhase').textContent=pn;
     document.getElementById('phaseBig').textContent=pn;
     document.getElementById('phaseDesc').textContent=pd;
+
     const ang=Math.atan2(truePos.y,truePos.x)*180/Math.PI;
     document.getElementById('vDecl').textContent=(ang*.08).toFixed(2)+'°';
     document.getElementById('vLon').textContent=((ang+180)%360).toFixed(2)+'°';
     document.getElementById('vApogee').textContent=fkm(ed*1.02);
     document.getElementById('vPerigee').textContent=fkm(ed*0.98);
     document.getElementById('vPeriod').textContent=(2*Math.PI*ed/Math.max(vel,.001)/3600).toFixed(1)+'h';
-  } else { drawMap(now); }
+  } else {
+    drawMap(now);
+  }
+
   document.getElementById('metDisplay').textContent=fmet(el);
   document.getElementById('progFill').style.width=(prog*100)+'%';
   document.getElementById('progPct').textContent=Math.round(prog*100)+'%';
   document.getElementById('daysLeft').textContent=fRem(el);
   renderTimeline(el);
+
   requestAnimationFrame(tick);
 }
 
