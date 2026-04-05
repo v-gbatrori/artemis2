@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Artemis II · Mission Tracker</title>
+<title>Artemis II · Mission Tracker V4</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
 <style>
@@ -11,10 +11,12 @@
 :root{
   --c1:#7ee8ff;--c2:#b8d8ff;--c3:#ff8c2a;--c4:#ffd060;--c5:#4fc3f7;
   --ok:#6dffd3;--bg:#00060f;--border:rgba(100,200,255,.14);
+  --warn:#ffb347;--bad:#ff6b6b;
 }
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg)}
 body{font-family:'Share Tech Mono',monospace;color:var(--c1)}
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(80,180,255,.007) 2px,rgba(80,180,255,.007) 4px)}
+
 #scene{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000}
 .scene-inner{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 .aspect-box{position:relative;width:100vw;height:100vh;overflow:hidden}
@@ -48,7 +50,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
 .live-dot{width:.34vw;height:.34vw;min-width:4px;min-height:4px;border-radius:50%;background:#7affa8;box-shadow:0 0 7px #7affa8;animation:blink 1.2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
 
-#main{position:absolute;inset:9.2% 1.2% 1.3% 1.2%;display:grid;grid-template-columns:25% 50% 25%;gap:.6vw;min-height:0;z-index:6}
+#main{position:absolute;inset:9.2% 1.2% 1.3% 1.2%;display:grid;grid-template-columns:24% 47% 29%;gap:.6vw;min-height:0;z-index:6}
 .col{display:flex;flex-direction:column;gap:.6vw;min-width:0;min-height:0}
 .panel{background:linear-gradient(160deg,rgba(5,20,45,.65),rgba(2,10,24,.80));backdrop-filter:blur(3px);border:1px solid var(--border);border-radius:.26vw;padding:.48vw;position:relative;overflow:hidden;box-shadow:inset 0 1px 0 rgba(120,200,255,.06),inset 0 0 18px rgba(60,150,255,.025),0 0 12px rgba(0,0,0,.4)}
 .panel::before{content:'';position:absolute;top:0;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,rgba(80,180,255,.38),transparent)}
@@ -62,88 +64,19 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
 .dv.yw{color:var(--c4);text-shadow:0 0 8px rgba(255,208,60,.35)}
 .dv.bl{color:var(--c5);text-shadow:0 0 8px rgba(79,195,247,.35)}
 
-.live-tile{
-  aspect-ratio:16/9;
-  background:#000813;
-  border:1px solid rgba(200,0,0,.22);
-  border-radius:.26vw;
-  overflow:hidden;
-  position:relative;
-  flex:none;
-}
-.live-head{
-  position:absolute;top:0;left:0;right:0;
-  background:rgba(140,0,0,.88);color:#fff;
-  font-size:clamp(4px,.33vw,7.5px);letter-spacing:.15em;
-  padding:.26vw .42vw;display:flex;align-items:center;gap:.4vw;
-  z-index:3;
-}
-#ytOverlay{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:.5vw;
-  background:radial-gradient(ellipse at center,rgba(0,10,30,.85) 0%,rgba(0,4,14,.97) 100%);
-  z-index:4;
-  cursor:pointer;
-  transition:background .2s;
-}
+.live-tile{aspect-ratio:16/9;background:#000813;border:1px solid rgba(200,0,0,.22);border-radius:.26vw;overflow:hidden;position:relative;flex:none}
+.live-head{position:absolute;top:0;left:0;right:0;background:rgba(140,0,0,.88);color:#fff;font-size:clamp(4px,.33vw,7.5px);letter-spacing:.15em;padding:.26vw .42vw;display:flex;align-items:center;gap:.4vw;z-index:3}
+#ytOverlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5vw;background:radial-gradient(ellipse at center,rgba(0,10,30,.85) 0%,rgba(0,4,14,.97) 100%);z-index:4;cursor:pointer;transition:background .2s}
 #ytOverlay:hover{background:radial-gradient(ellipse at center,rgba(0,20,50,.85) 0%,rgba(0,8,20,.97) 100%)}
 #ytOverlay.hidden{display:none}
-.yt-play-btn{
-  width:clamp(28px,4vw,56px);
-  height:clamp(28px,4vw,56px);
-  border-radius:50%;
-  border:2px solid rgba(255,80,80,.7);
-  background:rgba(200,0,0,.22);
-  display:flex;align-items:center;justify-content:center;
-  font-size:clamp(12px,1.6vw,24px);
-  color:rgba(255,120,120,.95);
-  transition:all .2s;
-  box-shadow:0 0 clamp(8px,1.2vw,20px) rgba(255,0,0,.25);
-}
-#ytOverlay:hover .yt-play-btn{
-  background:rgba(200,0,0,.45);
-  border-color:rgba(255,100,100,.9);
-  box-shadow:0 0 clamp(14px,2vw,32px) rgba(255,0,0,.45);
-  transform:scale(1.08);
-}
-.yt-play-label{
-  font-family:'Orbitron',sans-serif;
-  font-size:clamp(5px,.48vw,10px);
-  color:rgba(255,130,130,.7);
-  letter-spacing:.18em;
-}
-.yt-auto-label{
-  font-size:clamp(4px,.32vw,7px);
-  color:rgba(100,180,255,.38);
-  letter-spacing:.12em;
-}
-.yt-ring{
-  position:absolute;
-  width:clamp(36px,5vw,68px);
-  height:clamp(36px,5vw,68px);
-  border-radius:50%;
-}
-.yt-ring svg{
-  width:100%;height:100%;
-  transform:rotate(-90deg);
-}
-.yt-ring circle{
-  fill:none;
-  stroke:rgba(255,80,80,.5);
-  stroke-width:2;
-  stroke-dasharray:157;
-  stroke-dashoffset:157;
-  transition:stroke-dashoffset .9s linear;
-}
-#ytFrame{
-  position:absolute;inset:0;
-  width:100%;height:100%;
-  border:none;
-  background:#000;
-  display:none;
-  z-index:2;
-}
+.yt-play-btn{width:clamp(28px,4vw,56px);height:clamp(28px,4vw,56px);border-radius:50%;border:2px solid rgba(255,80,80,.7);background:rgba(200,0,0,.22);display:flex;align-items:center;justify-content:center;font-size:clamp(12px,1.6vw,24px);color:rgba(255,120,120,.95);transition:all .2s;box-shadow:0 0 clamp(8px,1.2vw,20px) rgba(255,0,0,.25)}
+#ytOverlay:hover .yt-play-btn{background:rgba(200,0,0,.45);border-color:rgba(255,100,100,.9);box-shadow:0 0 clamp(14px,2vw,32px) rgba(255,0,0,.45);transform:scale(1.08)}
+.yt-play-label{font-family:'Orbitron',sans-serif;font-size:clamp(5px,.48vw,10px);color:rgba(255,130,130,.7);letter-spacing:.18em}
+.yt-auto-label{font-size:clamp(4px,.32vw,7px);color:rgba(100,180,255,.38);letter-spacing:.12em}
+.yt-ring{position:absolute;width:clamp(36px,5vw,68px);height:clamp(36px,5vw,68px);border-radius:50%}
+.yt-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.yt-ring circle{fill:none;stroke:rgba(255,80,80,.5);stroke-width:2;stroke-dasharray:157;stroke-dashoffset:157;transition:stroke-dashoffset .9s linear}
+#ytFrame{position:absolute;inset:0;width:100%;height:100%;border:none;background:#000;display:none;z-index:2}
 .live-foot{position:absolute;bottom:0;left:0;right:0;padding:.18vw .38vw;font-size:clamp(4px,.30vw,7px);color:rgba(255,100,100,.45);z-index:3;background:linear-gradient(0deg,rgba(0,0,0,.6),transparent)}
 .live-foot a{color:rgba(255,130,130,.6);text-decoration:none}
 
@@ -174,8 +107,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
 .sys-bar{flex:1;height:.16vw;min-height:2px;background:rgba(80,180,255,.07);border-radius:2px;margin:0 .28vw;overflow:hidden}
 .sys-fill{height:100%;border-radius:2px}
 .sys-val{min-width:1.8vw;text-align:right;font-size:clamp(4px,.38vw,8.5px);color:var(--c1);font-family:'Orbitron',sans-serif}
+
 .compact-block .dr{margin:.14vw 0}
 .compact-block .dv{font-size:clamp(6px,.68vw,14px)}
+
 .timeline-panel{flex:1;min-height:0;display:flex;flex-direction:column}
 .timeline-scroll{flex:1;min-height:0;overflow-y:auto;padding-right:.12vw}
 .timeline-scroll::-webkit-scrollbar{width:4px}
@@ -187,11 +122,41 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
 .tl-item.active .tl-dot{background:var(--c1);border-color:var(--c1);box-shadow:0 0 8px var(--c1);animation:blink 1.3s infinite}
 .tl-name{font-size:clamp(4px,.36vw,8px);color:rgba(150,210,255,.85);letter-spacing:.07em}
 .tl-desc{font-size:clamp(3px,.27vw,6.5px);color:rgba(200,225,255,.28);margin-top:.03vw}
+
 .link-btn{display:block;text-decoration:none;text-align:center;padding:.28vw .40vw;margin-bottom:.22vw;border-radius:.16vw;font-size:clamp(4px,.34vw,7.5px);letter-spacing:.11em;transition:.2s}
 .link-btn:hover{filter:brightness(1.3)}
 .link-arow{background:rgba(60,150,255,.07);border:1px solid rgba(60,150,255,.22);color:var(--c5)}
 .link-yt{background:rgba(220,0,0,.07);border:1px solid rgba(220,0,0,.22);color:#ff5555}
 .src-lbl{margin-top:.20vw;text-align:center;font-size:clamp(3px,.25vw,6.5px);color:rgba(100,180,255,.22);letter-spacing:.10em}
+
+.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:.24vw}
+.mini-card{background:rgba(20,60,110,.08);border:1px solid rgba(80,160,255,.10);border-radius:.16vw;padding:.24vw}
+.mini-label{font-size:clamp(3px,.25vw,6px);color:rgba(120,190,255,.34);letter-spacing:.10em}
+.mini-value{margin-top:.08vw;font-family:'Orbitron',sans-serif;font-size:clamp(5px,.52vw,11px);color:#eef8ff}
+
+.att-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.22vw}
+.att-cell{background:rgba(20,70,110,.08);border:1px solid rgba(80,160,255,.10);border-radius:.15vw;padding:.20vw;text-align:center}
+.att-name{font-size:clamp(3px,.24vw,6px);color:rgba(120,190,255,.34)}
+.att-val{margin-top:.06vw;font-family:'Orbitron',sans-serif;font-size:clamp(5px,.48vw,11px);color:#e8f4ff}
+
+.thruster-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.16vw}
+.thruster{border:1px solid rgba(80,160,255,.14);background:rgba(15,35,60,.35);border-radius:.12vw;padding:.16vw;text-align:center;transition:.15s}
+.thruster.active{background:rgba(109,255,211,.14);border-color:rgba(109,255,211,.55);box-shadow:0 0 10px rgba(109,255,211,.18), inset 0 0 8px rgba(109,255,211,.08)}
+.thruster.warn{background:rgba(255,180,70,.12);border-color:rgba(255,180,70,.45);box-shadow:0 0 10px rgba(255,180,70,.16)}
+.thruster-name{font-size:clamp(3px,.22vw,5.5px);color:rgba(150,210,255,.58)}
+.thruster-val{margin-top:.04vw;font-size:clamp(4px,.28vw,7px);color:#eff9ff}
+
+.event-grid{display:grid;grid-template-columns:1fr 1fr;gap:.16vw}
+.event-flag{display:flex;align-items:center;justify-content:space-between;gap:.2vw;background:rgba(15,35,60,.35);border:1px solid rgba(80,160,255,.12);border-radius:.14vw;padding:.20vw .24vw}
+.event-name{font-size:clamp(3px,.24vw,6px);color:rgba(150,210,255,.58)}
+.event-dot{width:.38vw;height:.38vw;min-width:6px;min-height:6px;border-radius:50%;background:rgba(120,180,255,.15);border:1px solid rgba(120,180,255,.25)}
+.event-dot.on{background:var(--ok);border-color:var(--ok);box-shadow:0 0 8px var(--ok)}
+.event-dot.warn{background:var(--warn);border-color:var(--warn);box-shadow:0 0 8px var(--warn)}
+
+.quat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.16vw}
+.quat-box{background:rgba(20,60,110,.08);border:1px solid rgba(80,160,255,.10);border-radius:.12vw;padding:.16vw;text-align:center}
+.quat-l{font-size:clamp(3px,.22vw,5.5px);color:rgba(120,190,255,.32)}
+.quat-v{margin-top:.04vw;font-size:clamp(4px,.30vw,7px);color:#dff1ff}
 </style>
 </head>
 <body>
@@ -275,7 +240,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
 
             <div class="col">
               <div class="panel">
-                <div class="ptitle">Systems Status</div>
+                <div class="ptitle">Vehicle Status</div>
                 <div class="status-grid">
                   <div class="sys-row"><span class="dl">O₂</span><div class="sys-bar"><div class="sys-fill" style="width:98%;background:var(--ok)"></div></div><span class="sys-val">98%</span></div>
                   <div class="sys-row"><span class="dl">PWR</span><div class="sys-bar"><div class="sys-fill" style="width:100%;background:var(--ok)"></div></div><span class="sys-val">NOM</span></div>
@@ -292,10 +257,55 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
                   <div class="dr"><span class="dl">LONGITUDE</span><span class="dv" id="vLon">—</span></div>
                 </div>
               </div>
+
+              <div class="panel">
+                <div class="ptitle">Attitude</div>
+                <div class="att-grid">
+                  <div class="att-cell"><div class="att-name">PITCH</div><div class="att-val" id="attPitch">—</div></div>
+                  <div class="att-cell"><div class="att-name">YAW</div><div class="att-val" id="attYaw">—</div></div>
+                  <div class="att-cell"><div class="att-name">ROLL</div><div class="att-val" id="attRoll">—</div></div>
+                </div>
+                <div class="divider"></div>
+                <div class="quat-row">
+                  <div class="quat-box"><div class="quat-l">QX</div><div class="quat-v" id="qX">—</div></div>
+                  <div class="quat-box"><div class="quat-l">QY</div><div class="quat-v" id="qY">—</div></div>
+                  <div class="quat-box"><div class="quat-l">QZ</div><div class="quat-v" id="qZ">—</div></div>
+                  <div class="quat-box"><div class="quat-l">QW</div><div class="quat-v" id="qW">—</div></div>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="ptitle">Solar Arrays</div>
+                <div class="mini-grid">
+                  <div class="mini-card"><div class="mini-label">SAW1 IG / OG</div><div class="mini-value" id="saw1">—</div></div>
+                  <div class="mini-card"><div class="mini-label">SAW2 IG / OG</div><div class="mini-value" id="saw2">—</div></div>
+                  <div class="mini-card"><div class="mini-label">SAW3 IG / OG</div><div class="mini-value" id="saw3">—</div></div>
+                  <div class="mini-card"><div class="mini-label">SAW4 IG / OG</div><div class="mini-value" id="saw4">—</div></div>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="ptitle">Thrusters</div>
+                <div class="thruster-grid" id="thrusterGrid"></div>
+              </div>
+
+              <div class="panel">
+                <div class="ptitle">Event Flags</div>
+                <div class="event-grid">
+                  <div class="event-flag"><span class="event-name">LIFTOFF</span><span class="event-dot" id="evtLiftoff"></span></div>
+                  <div class="event-flag"><span class="event-name">ICPS BURN</span><span class="event-dot" id="evtICPSBurn"></span></div>
+                  <div class="event-flag"><span class="event-name">PRIMARY BURN</span><span class="event-dot" id="evtPrimaryBurn"></span></div>
+                  <div class="event-flag"><span class="event-name">SRB SEP</span><span class="event-dot" id="evtSRBSep"></span></div>
+                  <div class="event-flag"><span class="event-name">ICPS SEP</span><span class="event-dot" id="evtICPSSep"></span></div>
+                  <div class="event-flag"><span class="event-name">SM SEP</span><span class="event-dot" id="evtSMSep"></span></div>
+                </div>
+              </div>
+
               <div class="panel timeline-panel">
                 <div class="ptitle">Mission Timeline</div>
                 <div class="timeline-scroll" id="tlContainer"></div>
               </div>
+
               <div class="panel">
                 <div class="ptitle">External Links</div>
                 <a class="link-btn link-arow" href="https://www.nasa.gov/trackartemis" target="_blank">NASA AROW TRACKER ↗</a>
@@ -316,9 +326,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
 </div>
 
 <script>
-/* ═══════════════════════════════════════════════
-   YOUTUBE AUTOPLAY LOGIC
-═══════════════════════════════════════════════ */
 const YT_SRC = 'https://www.youtube.com/embed/m3kR2KK8TEs?controls=1&autoplay=1&mute=0&rel=0&modestbranding=1&playsinline=1';
 const AUTO_DELAY = 5;
 
@@ -351,9 +358,6 @@ const cdInterval = setInterval(() => {
   }
 }, 1000);
 
-/* ═══════════════════════════════════════════════
-   HUD WINDOW POSITIONING
-═══════════════════════════════════════════════ */
 const HUD_WINDOW = { x:0.141, y:0.115, w:0.63, h:0.652 };
 const aspectBox  = document.querySelector('.aspect-box');
 const viewportEl = document.querySelector('.window-viewport');
@@ -376,9 +380,6 @@ function updateViewport() {
   viewportEl.style.height = (drawH * HUD_WINDOW.h) + 'px';
 }
 
-/* ═══════════════════════════════════════════════
-   MISSION DATA
-═══════════════════════════════════════════════ */
 const LAUNCH   = new Date('2026-04-01T22:35:00Z');
 const DUR      = 10 * 24 * 3600;
 const MOON_A   = 384400;
@@ -397,6 +398,13 @@ const MILESTONES = [
   {label:'RETURN BURN',t:6.5*24*3600,desc:'Homeward trajectory'},
   {label:'REENTRY',t:9.8*24*3600,desc:'Atmospheric entry'},
   {label:'SPLASHDOWN',t:10*24*3600,desc:'Pacific Ocean recovery'},
+];
+
+const THRUSTER_KEYS = [
+  'attMotorSD5A','attMotorSR4R','attMotorSR3L','attMotorSR3R','attMotorSD6A','attMotorSD5F',
+  'attMotorSD6F','attMotorSA3F','attMotorSB5F','attMotorSA3A','attMotorSA4F','attMotorSA4A',
+  'attMotorSC1F','attMotorSC1A','attMotorSC2A','attMotorSR4L','attMotorSB5A','attMotorSB6F',
+  'attMotorSC2F','attMotorSB6A','attMotorSR2L','attMotorSR2R','attMotorSR1L','attMotorSR1R'
 ];
 
 const fkm  = k => k>=1e6?(k/1e6).toFixed(2)+'M km':k>=1e5?(k/1e3).toFixed(1)+'k km':Math.round(k).toLocaleString('en-US')+' km';
@@ -434,26 +442,16 @@ function buildPhysics(){
     const t=new Date(t0+ms),frac=ms/(DUR*1000),moon=getMoonPos(t);
     let x,y,vx=0,vy=0;
     if(frac<0.04){
-      const a=frac/0.04*3*Math.PI,r=6563+frac*30000;
-      x=r*Math.cos(a);y=r*Math.sin(a);
+      const a=frac/0.04*3*Math.PI,r=6563+frac*30000;x=r*Math.cos(a);y=r*Math.sin(a);
       vx=-Math.sqrt(398600/r)*Math.sin(a);vy=Math.sqrt(398600/r)*Math.cos(a);
     } else if(frac<0.08){
-      const tf=(frac-.04)/.04,r=36000+tf*50000,a=3*Math.PI+tf*.8;
-      x=r*Math.cos(a);y=r*Math.sin(a);vx=8-tf*5;vy=2;
+      const tf=(frac-.04)/.04,r=36000+tf*50000,a=3*Math.PI+tf*.8;x=r*Math.cos(a);y=r*Math.sin(a);vx=8-tf*5;vy=2;
     } else if(frac<0.44){
-      const tf=(frac-.08)/.36,e=ease(tf);
-      x=lerp(80000*Math.cos(4.6),moon.x*.92,e);
-      y=lerp(80000*Math.sin(4.6),moon.y*.92,e);
-      vx=lerp(3.5,1,tf);vy=vx*.3;
+      const tf=(frac-.08)/.36,e=ease(tf);x=lerp(80000*Math.cos(4.6),moon.x*.92,e);y=lerp(80000*Math.sin(4.6),moon.y*.92,e);vx=lerp(3.5,1,tf);vy=vx*.3;
     } else if(frac<0.58){
-      const tf=(frac-.44)/.14,a=Math.PI+tf*1.6*Math.PI,r=6000+15000*Math.sin(tf*Math.PI);
-      x=moon.x+r*Math.cos(a);y=moon.y+r*Math.sin(a);
-      const sp=2.2+tf*.3;vx=-sp*Math.sin(a);vy=sp*Math.cos(a);
+      const tf=(frac-.44)/.14,a=Math.PI+tf*1.6*Math.PI,r=6000+15000*Math.sin(tf*Math.PI);x=moon.x+r*Math.cos(a);y=moon.y+r*Math.sin(a);const sp=2.2+tf*.3;vx=-sp*Math.sin(a);vy=sp*Math.cos(a);
     } else {
-      const tf=(frac-.58)/.42,e=ease(tf),mn=getMoonPos(t),sx=mn.x+4000*Math.cos(4.712),sy=mn.y+4000*Math.sin(4.712);
-      x=lerp(sx,0,e);y=lerp(sy,0,e);
-      const sp=lerp(1,11,tf),l=Math.sqrt(x*x+y*y)||1;
-      vx=-sp*(x/l);vy=-sp*(y/l);
+      const tf=(frac-.58)/.42,e=ease(tf),mn=getMoonPos(t),sx=mn.x+4000*Math.cos(4.712),sy=mn.y+4000*Math.sin(4.712);x=lerp(sx,0,e);y=lerp(sy,0,e);const sp=lerp(1,11,tf),l=Math.sqrt(x*x+y*y)||1;vx=-sp*(x/l);vy=-sp*(y/l);
     }
     vecs.push({t,x,y,vx,vy});
   }
@@ -468,8 +466,7 @@ function interpolate(vecs,t){
   let lo=0,hi=vecs.length-1;
   while(hi-lo>1){
     const mid=(lo+hi)>>1;
-    if(vecs[mid].t.getTime()<=ts) lo=mid;
-    else hi=mid;
+    if(vecs[mid].t.getTime()<=ts)lo=mid;else hi=mid;
   }
   const a=vecs[lo],b=vecs[hi],f=(ts-a.t.getTime())/(b.t.getTime()-a.t.getTime());
   return{x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,vx:a.vx+(b.vx-a.vx)*f,vy:a.vy+(b.vy-a.vy)*f,t};
@@ -477,9 +474,6 @@ function interpolate(vecs,t){
 
 let stateVectors = buildPhysics();
 
-/* ═══════════════════════════════════════════════════════════════
-   MULTI-SOURCE TELEMETRY ENGINE
-═══════════════════════════════════════════════ */
 const SRC = {
   PHYSICS:  { label:'PHYSICS MODEL',     color:'rgba(100,180,255,.22)', priority:0 },
   OEM:      { label:'NASA OEM FILE',     color:'rgba(120,220,120,.45)', priority:1 },
@@ -490,19 +484,17 @@ let activeSource = 'PHYSICS';
 
 let liveNumerics = {
   active:false,
-  ed:null,
-  md:null,
-  vel:null,
-  comm:null,
-  metSec:null,
-  launchUnix:null
+  ed:null, md:null, vel:null, comm:null, metSec:null, launchUnix:null,
+  qx:null, qy:null, qz:null, qw:null,
+  saw:[null,null,null,null,null,null,null,null],
+  thrusters:{},
+  events:{liftoff:false,icpsBurn:false,primaryBurn:false,srbSep:false,icpsSep:false,smSep:false}
 };
 
-let lastAROWFetch     = 0;
+let lastAROWFetch = 0;
 let lastHorizonsFetch = 0;
-let lastOEMFetch      = 0;
-let oemLoaded         = false;
-
+let lastOEMFetch = 0;
+let oemLoaded = false;
 const PROXY = 'https://api.allorigins.win/get?url=';
 
 function setSource(key, extra='') {
@@ -528,14 +520,17 @@ function decodeAROWJson(text) {
     const vyFt = parseFloat(d?.Parameter_2010?.Value);
     const vzFt = parseFloat(d?.Parameter_2011?.Value);
 
+    const qx = parseFloat(d?.Parameter_2012?.Value);
+    const qy = parseFloat(d?.Parameter_2013?.Value);
+    const qz = parseFloat(d?.Parameter_2014?.Value);
+    const qw = parseFloat(d?.Parameter_2015?.Value);
+
     const metSec     = parseFloat(d?.Parameter_5001?.Value);
     const launchUnix = parseFloat(d?.Parameter_5000?.Value);
-    const earthUtc   = parseFloat(d?.Parameter_5012?.Value);
 
     if ([xFt,yFt,zFt,vxFt,vyFt,vzFt].some(v => !Number.isFinite(v))) return null;
 
     const FT_TO_KM = 0.0003048;
-
     const x  = xFt * FT_TO_KM;
     const y  = yFt * FT_TO_KM;
     const z  = zFt * FT_TO_KM;
@@ -544,18 +539,67 @@ function decodeAROWJson(text) {
     const vz = vzFt * FT_TO_KM;
 
     const earthR = Math.sqrt(x*x + y*y + z*z);
-    const moon   = getMoonPos(new Date());
-    const md     = Math.sqrt((x-moon.x)**2 + (y-moon.y)**2 + z*z);
+    const moon = getMoonPos(new Date());
+    const md = Math.sqrt((x-moon.x)**2 + (y-moon.y)**2 + z*z);
+
+    const saw = [
+      parseFloat(d?.Parameter_5002?.Value), parseFloat(d?.Parameter_5003?.Value),
+      parseFloat(d?.Parameter_5004?.Value), parseFloat(d?.Parameter_5005?.Value),
+      parseFloat(d?.Parameter_5006?.Value), parseFloat(d?.Parameter_5007?.Value),
+      parseFloat(d?.Parameter_5008?.Value), parseFloat(d?.Parameter_5009?.Value),
+    ];
+
+    const thrusterMap = {
+      attMotorSD5A: parseFloat(d?.Parameter_2066?.Value),
+      attMotorSR4R: parseFloat(d?.Parameter_2067?.Value),
+      attMotorSR3L: parseFloat(d?.Parameter_2068?.Value),
+      attMotorSR3R: parseFloat(d?.Parameter_2069?.Value),
+      attMotorSD6A: parseFloat(d?.Parameter_2070?.Value),
+      attMotorSD5F: parseFloat(d?.Parameter_2071?.Value),
+      attMotorSD6F: parseFloat(d?.Parameter_2072?.Value),
+      attMotorSA3F: parseFloat(d?.Parameter_2073?.Value),
+      attMotorSB5F: parseFloat(d?.Parameter_2074?.Value),
+      attMotorSA3A: parseFloat(d?.Parameter_2075?.Value),
+      attMotorSA4F: parseFloat(d?.Parameter_2076?.Value),
+      attMotorSA4A: parseFloat(d?.Parameter_2077?.Value),
+      attMotorSC1F: parseFloat(d?.Parameter_2078?.Value),
+      attMotorSC1A: parseFloat(d?.Parameter_2079?.Value),
+      attMotorSC2A: parseFloat(d?.Parameter_2080?.Value),
+      attMotorSR4L: parseFloat(d?.Parameter_2081?.Value),
+      attMotorSB5A: parseFloat(d?.Parameter_2082?.Value),
+      attMotorSB6F: parseFloat(d?.Parameter_2083?.Value),
+      attMotorSC2F: parseFloat(d?.Parameter_2084?.Value),
+      attMotorSB6A: parseFloat(d?.Parameter_2085?.Value),
+      attMotorSR2L: parseFloat(d?.Parameter_2086?.Value),
+      attMotorSR2R: parseFloat(d?.Parameter_2087?.Value),
+      attMotorSR1L: parseFloat(d?.Parameter_2088?.Value),
+      attMotorSR1R: parseFloat(d?.Parameter_2089?.Value),
+    };
+
+    const events = {
+      liftoff:     Number(parseFloat(d?.Parameter_2046?.Value)) > 0 || Number(parseFloat(d?.Parameter_2026?.Value)) > 0,
+      icpsBurn:    Number(parseFloat(d?.Parameter_2100?.Value)) > 0 || Number(parseFloat(d?.Parameter_2045?.Value)) > 0,
+      primaryBurn: Number(parseFloat(d?.Parameter_2048?.Value)) > 0 || Number(parseFloat(d?.Parameter_2049?.Value)) > 0,
+      srbSep:      Number(parseFloat(d?.Parameter_2043?.Value)) > 0,
+      icpsSep:     Number(parseFloat(d?.Parameter_2040?.Value)) > 0 || Number(parseFloat(d?.Parameter_2041?.Value)) > 0 || Number(parseFloat(d?.Parameter_2042?.Value)) > 0,
+      smSep:       Number(parseFloat(d?.Parameter_2028?.Value)) > 0 || Number(parseFloat(d?.Parameter_2029?.Value)) > 0
+    };
 
     return {
-      x, y, z, vx, vy, vz,
+      x,y,z,vx,vy,vz,
       ed: Math.max(0, earthR - 6371),
       md,
       vel: Math.sqrt(vx*vx + vy*vy + vz*vz),
       comm: earthR / 299792.458,
       metSec: Number.isFinite(metSec) ? metSec : null,
       launchUnix: Number.isFinite(launchUnix) ? launchUnix : null,
-      earthUtc: Number.isFinite(earthUtc) ? earthUtc : null
+      qx: Number.isFinite(qx) ? qx : null,
+      qy: Number.isFinite(qy) ? qy : null,
+      qz: Number.isFinite(qz) ? qz : null,
+      qw: Number.isFinite(qw) ? qw : null,
+      saw,
+      thrusters: thrusterMap,
+      events
     };
   } catch {
     return null;
@@ -593,17 +637,16 @@ async function tryAROW() {
     if (!chosen || !live) throw new Error('parse');
 
     const t = new Date();
-    const pt = { t, x:live.x, y:live.y, vx:live.vx, vy:live.vy };
-    mergePoint(pt);
+    mergePoint({ t, x:live.x, y:live.y, vx:live.vx, vy:live.vy });
 
     liveNumerics = {
       active:true,
-      ed:live.ed,
-      md:live.md,
-      vel:live.vel,
-      comm:live.comm,
-      metSec:live.metSec,
-      launchUnix:live.launchUnix
+      ed:live.ed, md:live.md, vel:live.vel, comm:live.comm,
+      metSec:live.metSec, launchUnix:live.launchUnix,
+      qx:live.qx, qy:live.qy, qz:live.qz, qw:live.qw,
+      saw:live.saw,
+      thrusters:live.thrusters,
+      events:live.events
     };
 
     setSource('AROW', chosen.name?.split('/').pop() || '');
@@ -618,24 +661,16 @@ const HORIZONS_IDS = ['-64', '-65'];
 function parseHorizons(text) {
   const vecs = [];
   let inData = false;
-
   for (const raw of text.split('\n')) {
     const l = raw.trim();
     if (l.includes('$$SOE')) { inData = true; continue; }
     if (l.includes('$$EOE')) break;
     if (!inData || !l) continue;
-
     const p = l.split(/\s+/);
     if (p.length >= 7 && !isNaN(p[0])) {
       const jd = parseFloat(p[0]);
       const t  = new Date((jd - 2440587.5) * 86400000);
-      vecs.push({
-        t,
-        x:  parseFloat(p[1]),
-        y:  parseFloat(p[2]),
-        vx: parseFloat(p[4]),
-        vy: parseFloat(p[5]),
-      });
+      vecs.push({ t, x:parseFloat(p[1]), y:parseFloat(p[2]), vx:parseFloat(p[4]), vy:parseFloat(p[5]) });
     }
   }
   return vecs;
@@ -653,36 +688,20 @@ async function tryHorizons() {
   for (const id of HORIZONS_IDS) {
     try {
       const params = new URLSearchParams({
-        format:     'text',
-        COMMAND:    `'${id}'`,
-        OBJ_DATA:   'NO',
-        MAKE_EPHEM: 'YES',
-        EPHEM_TYPE: 'VECTORS',
-        CENTER:     '500@399',
-        START_TIME: fmt(start),
-        STOP_TIME:  fmt(stop),
-        STEP_SIZE:  '5 m',
-        VEC_TABLE:  '2',
-        REF_PLANE:  'ECLIPTIC',
-        REF_SYSTEM: 'J2000',
-        VEC_CORR:   'NONE',
-        OUT_UNITS:  'KM-S',
-        CSV_FORMAT: 'YES',
+        format:'text', COMMAND:`'${id}'`, OBJ_DATA:'NO', MAKE_EPHEM:'YES', EPHEM_TYPE:'VECTORS',
+        CENTER:'500@399', START_TIME:fmt(start), STOP_TIME:fmt(stop), STEP_SIZE:'5 m',
+        VEC_TABLE:'2', REF_PLANE:'ECLIPTIC', REF_SYSTEM:'J2000', VEC_CORR:'NONE',
+        OUT_UNITS:'KM-S', CSV_FORMAT:'YES',
       });
-
       const url = 'https://ssd.jpl.nasa.gov/api/horizons.api?' + params;
       const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
       if (!res.ok) continue;
-
       const text = await res.text();
       if (text.includes('No ephemeris')) continue;
-
       const vecs = parseHorizons(text);
       if (vecs.length < 3) continue;
-
       for (const v of vecs) mergePoint(v);
       stateVectors.sort((a,b) => a.t - b.t);
-
       setSource('HORIZONS', `${vecs.length} pts · ID ${id}`);
       liveNumerics.active = false;
       return true;
@@ -697,14 +716,12 @@ const OEM_URLS = [
 ];
 
 function parseOEM(text) {
-  const vecs = [];
-  let inData = false;
+  const vecs = []; let inData = false;
   for (const raw of text.split('\n')) {
     const l = raw.trim();
     if (l === 'DATA_START') { inData = true; continue; }
     if (l === 'DATA_STOP')  { inData = false; continue; }
     if (!inData || !l) continue;
-
     const p = l.split(/\s+/);
     if (p.length >= 7) {
       const t = new Date(p[0]);
@@ -716,11 +733,9 @@ function parseOEM(text) {
 
 async function tryOEM() {
   if (oemLoaded) return false;
-
   const now = Date.now();
   if (now - lastOEMFetch < 290000) return false;
   lastOEMFetch = now;
-
   for (const url of OEM_URLS) {
     try {
       const r = await fetch(PROXY + encodeURIComponent(url), { signal: AbortSignal.timeout(9000) });
@@ -750,19 +765,15 @@ function mergePoint(pt) {
 async function refreshSources() {
   const arowOk = await tryAROW();
   if (arowOk) return;
-
   const cur = SRC[activeSource].priority;
-
   if (cur < SRC.HORIZONS.priority) {
     const hOk = await tryHorizons();
     if (hOk) return;
   }
-
   if (cur < SRC.OEM.priority) {
     const oemOk = await tryOEM();
     if (oemOk) return;
   }
-
   if (activeSource === 'PHYSICS') setSource('PHYSICS');
 }
 
@@ -771,9 +782,99 @@ setTimeout(() => tryHorizons(), 3000);
 setTimeout(() => tryAROW(),     5000);
 setInterval(refreshSources,    30000);
 
-/* ═══════════════════════════════════════════════
-   MAP CANVAS
-═══════════════════════════════════════════════ */
+function quatToEuler(qx, qy, qz, qw) {
+  if (![qx,qy,qz,qw].every(v => Number.isFinite(v))) return null;
+
+  const sinr_cosp = 2 * (qw * qx + qy * qz);
+  const cosr_cosp = 1 - 2 * (qx * qx + qy * qy);
+  const roll = Math.atan2(sinr_cosp, cosr_cosp);
+
+  const sinp = 2 * (qw * qy - qz * qx);
+  const pitch = Math.abs(sinp) >= 1 ? Math.sign(sinp) * Math.PI / 2 : Math.asin(sinp);
+
+  const siny_cosp = 2 * (qw * qz + qx * qy);
+  const cosy_cosp = 1 - 2 * (qy * qy + qz * qz);
+  const yaw = Math.atan2(siny_cosp, cosy_cosp);
+
+  return {
+    pitch: pitch * 180 / Math.PI,
+    yaw: yaw * 180 / Math.PI,
+    roll: roll * 180 / Math.PI
+  };
+}
+
+function updateAttitudePanel() {
+  const {qx,qy,qz,qw} = liveNumerics;
+  document.getElementById('qX').textContent = Number.isFinite(qx) ? qx.toFixed(4) : '—';
+  document.getElementById('qY').textContent = Number.isFinite(qy) ? qy.toFixed(4) : '—';
+  document.getElementById('qZ').textContent = Number.isFinite(qz) ? qz.toFixed(4) : '—';
+  document.getElementById('qW').textContent = Number.isFinite(qw) ? qw.toFixed(4) : '—';
+
+  const e = quatToEuler(qx,qy,qz,qw);
+  document.getElementById('attPitch').textContent = e ? `${e.pitch.toFixed(1)}°` : '—';
+  document.getElementById('attYaw').textContent   = e ? `${e.yaw.toFixed(1)}°` : '—';
+  document.getElementById('attRoll').textContent  = e ? `${e.roll.toFixed(1)}°` : '—';
+}
+
+function updateSolarPanel() {
+  const s = liveNumerics.saw || [];
+  const fmt = (a,b) => Number.isFinite(a) && Number.isFinite(b) ? `${a.toFixed(1)}° / ${b.toFixed(1)}°` : '—';
+  document.getElementById('saw1').textContent = fmt(s[0], s[4]);
+  document.getElementById('saw2').textContent = fmt(s[1], s[5]);
+  document.getElementById('saw3').textContent = fmt(s[2], s[6]);
+  document.getElementById('saw4').textContent = fmt(s[3], s[7]);
+}
+
+function initThrusterPanel() {
+  const grid = document.getElementById('thrusterGrid');
+  grid.innerHTML = '';
+  for (const key of THRUSTER_KEYS) {
+    const div = document.createElement('div');
+    div.className = 'thruster';
+    div.id = `thr_${key}`;
+    div.innerHTML = `<div class="thruster-name">${key.replace('attMotor','')}</div><div class="thruster-val">—</div>`;
+    grid.appendChild(div);
+  }
+}
+initThrusterPanel();
+
+function updateThrusterPanel() {
+  const thr = liveNumerics.thrusters || {};
+  for (const key of THRUSTER_KEYS) {
+    const el = document.getElementById(`thr_${key}`);
+    if (!el) continue;
+    const val = thr[key];
+    const label = el.querySelector('.thruster-val');
+    if (!Number.isFinite(val)) {
+      el.className = 'thruster';
+      label.textContent = '—';
+      continue;
+    }
+    label.textContent = val.toFixed(2);
+    el.className = 'thruster';
+    if (Math.abs(val) > 0.75) el.classList.add('active');
+    else if (Math.abs(val) > 0.25) el.classList.add('warn');
+  }
+}
+
+function setDot(id, on, warn=false) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'event-dot';
+  if (warn) el.classList.add('warn');
+  else if (on) el.classList.add('on');
+}
+
+function updateEventPanel() {
+  const e = liveNumerics.events || {};
+  setDot('evtLiftoff', !!e.liftoff);
+  setDot('evtICPSBurn', !!e.icpsBurn, false);
+  setDot('evtPrimaryBurn', !!e.primaryBurn, false);
+  setDot('evtSRBSep', !!e.srbSep);
+  setDot('evtICPSSep', !!e.icpsSep);
+  setDot('evtSMSep', !!e.smSep);
+}
+
 const canvas = document.getElementById('mapCanvas');
 const ctx    = canvas.getContext('2d');
 let stars=null, sweepAngle=0, animPos=null;
@@ -838,7 +939,7 @@ function drawMap(now){
     for(const s of stars){
       ctx.globalAlpha=s.a;
       ctx.fillStyle=s.warm?'#ffe8c8':'#c8e0ff';
-      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
     }
     ctx.globalAlpha=1;
   }
@@ -934,17 +1035,13 @@ function renderTimeline(elSec){
 function tick(){
   const now = new Date();
   const L = liveNumerics;
-  const el = (L.active && Number.isFinite(L.metSec))
-    ? L.metSec
-    : Math.max(0, (now - LAUNCH) / 1000);
-
+  const el = (L.active && Number.isFinite(L.metSec)) ? L.metSec : Math.max(0, (now - LAUNCH) / 1000);
   const prog = Math.min(1, el / DUR);
   const truePos = interpolate(stateVectors, now);
 
   if(truePos){
-    if(!animPos){
-      animPos={x:truePos.x,y:truePos.y,vx:truePos.vx,vy:truePos.vy};
-    } else {
+    if(!animPos){ animPos={x:truePos.x,y:truePos.y,vx:truePos.vx,vy:truePos.vy}; }
+    else{
       animPos.x=lerp(animPos.x,truePos.x,SMOOTH);
       animPos.y=lerp(animPos.y,truePos.y,SMOOTH);
       animPos.vx=lerp(animPos.vx,truePos.vx,SMOOTH);
@@ -983,6 +1080,11 @@ function tick(){
   document.getElementById('progFill').style.width=(prog*100)+'%';
   document.getElementById('progPct').textContent=Math.round(prog*100)+'%';
   document.getElementById('daysLeft').textContent=fRem(el);
+
+  updateAttitudePanel();
+  updateSolarPanel();
+  updateThrusterPanel();
+  updateEventPanel();
   renderTimeline(el);
 
   requestAnimationFrame(tick);
