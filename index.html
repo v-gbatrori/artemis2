@@ -1090,7 +1090,7 @@ function drawMap(now){
     const p=w2s(v.x,v.y,scale,ox,oy);
     if(first){ctx.moveTo(p.sx,p.sy);first=false;}else ctx.lineTo(p.sx,p.sy);
   }
-  ctx.strokeStyle='rgba(140,70,255,.07)'; ctx.lineWidth=1; ctx.stroke();
+  ctx.strokeStyle='rgba(140,70,255,.22)'; ctx.lineWidth=1.8; ctx.stroke();
 
   // Animated Orion trail + position
   if(animPos){
