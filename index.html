@@ -9,171 +9,332 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --c1:#d4aaff;--c2:#b088ee;--c3:#ff9a5c;--c4:#ffe080;--c5:#88ccff;
-  --ok:#88ffcc;--warn:#ffb347;--bad:#ff6b6b;
-  --bg:#04000f;--border:rgba(180,100,255,.14);--border2:rgba(140,80,220,.10);
+  /* ── High-contrast readable palette ── */
+  --c1:#e8f4ff;        /* primary text — bright white-blue   */
+  --c2:#c0d8ff;        /* secondary text                     */
+  --c3:#ffb366;        /* amber accent — velocity            */
+  --c4:#ffe566;        /* gold — moon dist / highlights      */
+  --c5:#66ddff;        /* cyan — comm delay / phase          */
+  --ok:#66ffbb;        /* systems OK                         */
+  --warn:#ffb347;      /* warning                            */
+  --bad:#ff7777;       /* error                              */
+  --bg:#02000a;
+  --panel-bg:rgba(8,4,24,.82);
+  --panel-border:rgba(160,100,255,.22);
+  --panel-border2:rgba(120,80,200,.14);
 }
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg)}
 body{font-family:'Share Tech Mono',monospace;color:var(--c1)}
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(160,80,255,.006) 2px,rgba(160,80,255,.006) 4px)}
+
+/* subtle scanlines */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(140,80,255,.005) 2px,rgba(140,80,255,.005) 4px);
+}
+
+/* ── SCENE ── */
 #scene{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000}
 .scene-inner{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 .aspect-box{position:relative;width:100vw;height:100vh;overflow:hidden}
 #bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0}
 #front{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:30;pointer-events:none}
 .window-viewport{position:absolute;left:0;top:0;width:100px;height:100px;overflow:hidden;z-index:10;border-radius:2vw}
+
+/* ── HUD — semi-transparent so cockpit shows through ── */
 #hud{
   position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(10,2,28,.20) 0%,rgba(5,1,18,.28) 100%),
-    repeating-linear-gradient(0deg,transparent 0 2px,rgba(160,80,255,.010) 2px 4px);
-  border:1px solid rgba(160,80,255,.16);border-radius:1.8vw;overflow:hidden;
-  box-shadow:inset 0 0 30px rgba(180,80,255,.06),0 0 30px rgba(140,40,255,.05);
-  animation:holoFlicker 6s infinite;
+  background:
+    linear-gradient(180deg,rgba(6,2,20,.25) 0%,rgba(3,1,12,.32) 100%),
+    repeating-linear-gradient(0deg,transparent 0 2px,rgba(140,80,255,.006) 2px 4px);
+  border:1px solid rgba(160,100,255,.20);
+  border-radius:1.8vw;
+  overflow:hidden;
 }
-@keyframes holoFlicker{0%,95%,100%{opacity:1}96%{opacity:.94}97%{opacity:.98}98%{opacity:.92}99%{opacity:.97}}
-#hud::before,#hud::after{content:'';position:absolute;left:3%;right:3%;height:1px;z-index:2;background:linear-gradient(90deg,transparent,rgba(180,80,255,.45),transparent)}
+#hud::before,#hud::after{
+  content:'';position:absolute;left:3%;right:3%;height:1px;z-index:2;
+  background:linear-gradient(90deg,transparent,rgba(180,100,255,.50),transparent);
+}
 #hud::before{top:0}#hud::after{bottom:0}
-.holo-scan{position:absolute;inset:0;pointer-events:none;z-index:25;background:linear-gradient(180deg,transparent 0%,rgba(180,80,255,.03) 48%,rgba(200,100,255,.06) 50%,rgba(180,80,255,.03) 52%,transparent 100%);animation:holoSweep 4s linear infinite}
+
+/* hologram flicker */
+@keyframes holoFlicker{
+  0%,95%,100%{opacity:1}96%{opacity:.94}97%{opacity:.98}98%{opacity:.92}99%{opacity:.97}
+}
+#hud{animation:holoFlicker 6s infinite}
+
+/* hologram scan sweep */
+.holo-scan{
+  position:absolute;inset:0;pointer-events:none;z-index:25;
+  background:linear-gradient(180deg,transparent 0%,rgba(180,80,255,.035) 48%,rgba(200,100,255,.065) 50%,rgba(180,80,255,.035) 52%,transparent 100%);
+  animation:holoSweep 4s linear infinite;
+}
 @keyframes holoSweep{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
-.holo-lines{position:absolute;inset:0;pointer-events:none;z-index:24;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(160,60,255,.025) 3px,rgba(160,60,255,.025) 4px)}
-.holo-edge{position:absolute;inset:0;pointer-events:none;z-index:26;border-radius:1.8vw;box-shadow:inset 0 0 40px rgba(160,60,255,.06),inset 0 2px 0 rgba(220,140,255,.08),inset 0 -2px 0 rgba(160,60,255,.06)}
+
+/* horizontal scan lines */
+.holo-lines{
+  position:absolute;inset:0;pointer-events:none;z-index:24;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(140,60,255,.022) 3px,rgba(140,60,255,.022) 4px);
+}
+
+/* inner edge glow */
+.holo-edge{
+  position:absolute;inset:0;pointer-events:none;z-index:26;border-radius:1.8vw;
+  box-shadow:inset 0 0 40px rgba(140,60,255,.07),inset 0 2px 0 rgba(200,130,255,.10),inset 0 -2px 0 rgba(140,60,255,.07);
+}
+
+/* corner brackets */
 .holo-corner{position:absolute;width:clamp(16px,2.2vw,36px);height:clamp(16px,2.2vw,36px);pointer-events:none;z-index:27}
 .holo-corner svg{width:100%;height:100%}
-.hc-tl{top:.4vw;left:.4vw}.hc-tr{top:.4vw;right:.4vw;transform:scaleX(-1)}.hc-bl{bottom:.4vw;left:.4vw;transform:scaleY(-1)}.hc-br{bottom:.4vw;right:.4vw;transform:scale(-1,-1)}
+.hc-tl{top:.4vw;left:.4vw}
+.hc-tr{top:.4vw;right:.4vw;transform:scaleX(-1)}
+.hc-bl{bottom:.4vw;left:.4vw;transform:scaleY(-1)}
+.hc-br{bottom:.4vw;right:.4vw;transform:scale(-1,-1)}
+
+/* glass reflection */
 .glass-layer{position:absolute;inset:0;pointer-events:none;z-index:27;mix-blend-mode:screen}
-.glass-sheen{position:absolute;inset:-8%;background:linear-gradient(108deg,rgba(255,255,255,0) 10%,rgba(200,150,255,.03) 24%,rgba(255,255,255,.05) 29%,rgba(200,150,255,.02) 34%,rgba(255,255,255,0) 42%);filter:blur(1px)}
-.glass-glow{position:absolute;inset:0;background:radial-gradient(circle at 20% 8%,rgba(180,100,255,.06),transparent 22%),radial-gradient(circle at 80% 12%,rgba(180,100,255,.04),transparent 24%),radial-gradient(circle at 50% 100%,rgba(120,40,200,.03),transparent 30%)}
+.glass-sheen{position:absolute;inset:-8%;background:linear-gradient(108deg,rgba(255,255,255,0) 10%,rgba(200,150,255,.04) 24%,rgba(255,255,255,.06) 29%,rgba(200,150,255,.02) 34%,rgba(255,255,255,0) 42%);filter:blur(1px)}
+.glass-glow{position:absolute;inset:0;background:radial-gradient(circle at 20% 8%,rgba(180,100,255,.07),transparent 22%),radial-gradient(circle at 80% 12%,rgba(180,100,255,.05),transparent 24%)}
 .edge-reflection{position:absolute;inset:0;pointer-events:none;z-index:28}
 .edge-reflection::before,.edge-reflection::after{content:'';position:absolute;top:0;bottom:0;width:10%;filter:blur(22px)}
-.edge-reflection::before{left:-2%;background:linear-gradient(90deg,rgba(160,60,255,.09),transparent)}
-.edge-reflection::after{right:-2%;background:linear-gradient(270deg,rgba(160,60,255,.09),transparent)}
+.edge-reflection::before{left:-2%;background:linear-gradient(90deg,rgba(140,60,255,.10),transparent)}
+.edge-reflection::after{right:-2%;background:linear-gradient(270deg,rgba(140,60,255,.10),transparent)}
 
-#topBar{position:absolute;left:0;right:0;top:0;height:8%;min-height:24px;display:flex;align-items:center;justify-content:center;gap:1vw;background:linear-gradient(180deg,rgba(8,2,22,.55) 60%,transparent);border-bottom:1px solid rgba(160,60,255,.10);z-index:5}
+/* ── TOP BAR ── */
+#topBar{
+  position:absolute;left:0;right:0;top:0;height:8%;min-height:24px;
+  display:flex;align-items:center;justify-content:center;gap:1vw;
+  background:linear-gradient(180deg,rgba(6,2,20,.70) 60%,transparent);
+  border-bottom:1px solid rgba(140,60,255,.12);z-index:5;
+}
 .header-wrap{text-align:center}
-.mission-title{font-family:'Orbitron',sans-serif;font-size:clamp(9px,1.1vw,22px);font-weight:900;color:var(--c1);letter-spacing:.26em;white-space:nowrap;text-shadow:0 0 18px rgba(180,80,255,.45),0 0 50px rgba(160,60,255,.12)}
-.mission-sub{font-size:clamp(4px,.30vw,7px);color:rgba(180,120,255,.28);letter-spacing:.24em;white-space:nowrap;margin-top:.05vw}
-.live-badge{display:flex;align-items:center;gap:.3vw;background:rgba(180,80,255,.08);border:1px solid rgba(180,80,255,.20);border-radius:2px;padding:.12vw .44vw;color:#cc88ff;font-size:clamp(4px,.34vw,8px);letter-spacing:.15em;box-shadow:0 0 10px rgba(160,60,255,.12)}
-.live-dot{width:.32vw;height:.32vw;min-width:4px;min-height:4px;border-radius:50%;background:#cc88ff;box-shadow:0 0 8px #cc88ff;animation:blink 1.2s infinite}
+.mission-title{
+  font-family:'Orbitron',sans-serif;
+  font-size:clamp(12px,1.5vw,30px);
+  font-weight:900;color:#ffffff;
+  letter-spacing:.24em;white-space:nowrap;
+  text-shadow:0 0 12px rgba(200,140,255,.60),0 0 28px rgba(140,80,255,.28),0 2px 4px rgba(0,0,0,.95);
+}
+.mission-sub{
+  font-size:clamp(5px,.36vw,9px);color:rgba(220,200,255,.70);
+  letter-spacing:.22em;white-space:nowrap;margin-top:.05vw;
+  text-shadow:0 1px 3px rgba(0,0,0,.95);
+}
+.live-badge{
+  display:flex;align-items:center;gap:.3vw;
+  background:rgba(180,80,255,.14);border:1px solid rgba(180,80,255,.28);
+  border-radius:2px;padding:.12vw .44vw;
+  color:#ffddff;font-size:clamp(5px,.40vw,9px);letter-spacing:.15em;
+  box-shadow:0 0 10px rgba(160,60,255,.18);
+  text-shadow:0 0 8px rgba(220,140,255,.40),0 1px 3px rgba(0,0,0,.95);
+}
+.live-dot{width:.32vw;height:.32vw;min-width:4px;min-height:4px;border-radius:50%;background:#ff8888;box-shadow:0 0 8px #ff8888;animation:blink 1.2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
 
+/* ── MAIN GRID ── */
 #main{position:absolute;inset:8.8% 1.1% 1.2% 1.1%;display:grid;grid-template-columns:24% 47% 29%;gap:.55vw;min-height:0;z-index:6}
 .col{display:flex;flex-direction:column;gap:.55vw;min-width:0;min-height:0}
-.col-right-scroll{min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:.16vw;display:flex;flex-direction:column;gap:.55vw;align-items:stretch;scrollbar-width:thin;scrollbar-color:rgba(180,80,255,.35) transparent}
+.col-right-scroll{
+  min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:.16vw;
+  display:flex;flex-direction:column;gap:.55vw;align-items:stretch;
+  scrollbar-width:thin;scrollbar-color:rgba(160,80,255,.35) transparent;
+}
 .col-right-scroll::-webkit-scrollbar{width:5px}
-.col-right-scroll::-webkit-scrollbar-thumb{background:rgba(160,60,255,.30);border-radius:10px}
+.col-right-scroll::-webkit-scrollbar-thumb{background:rgba(140,60,255,.32);border-radius:10px}
 .col-right-scroll .panel{flex:0 0 auto;min-height:auto}
 
-.panel{background:linear-gradient(160deg,rgba(22,6,50,.10),rgba(10,2,28,.18));backdrop-filter:blur(6px);border:1px solid var(--border);border-radius:.24vw;padding:.46vw;position:relative;overflow:hidden;box-shadow:inset 0 1px 0 rgba(200,120,255,.05),inset 0 0 16px rgba(140,40,255,.02),0 0 14px rgba(140,40,255,.03)}
-.panel::before{content:'';position:absolute;top:0;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,rgba(180,80,255,.28),transparent)}
-.ptitle{font-family:'Orbitron',sans-serif;font-size:clamp(4px,.40vw,9px);color:rgba(180,120,255,.46);letter-spacing:.18em;text-transform:uppercase;display:flex;align-items:center;gap:.24vw;margin-bottom:.30vw}
-.ptitle::before{content:'';width:.24vw;height:.24vw;min-width:4px;min-height:4px;border:1px solid var(--c1);transform:rotate(45deg);flex:none}
-.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(160,80,255,.12),transparent);margin:.34vw 0}
+/* ── PANEL ── */
+.panel{
+  background:var(--panel-bg);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--panel-border);
+  border-radius:.24vw;padding:.46vw;
+  position:relative;overflow:hidden;
+  box-shadow:inset 0 1px 0 rgba(220,160,255,.10),inset 0 0 20px rgba(120,40,255,.04),0 0 16px rgba(0,0,0,.50);
+}
+.panel::before{content:'';position:absolute;top:0;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,rgba(180,100,255,.38),transparent)}
+
+/* Panel section title */
+.ptitle{
+  font-family:'Orbitron',sans-serif;
+  font-size:clamp(7px,.65vw,13px);
+  color:#aeddff;  /* bright cyan-white — easily readable */
+  letter-spacing:.18em;text-transform:uppercase;
+  display:flex;align-items:center;gap:.24vw;margin-bottom:.30vw;
+  text-shadow:0 0 10px rgba(120,220,255,.22),0 1px 4px rgba(0,0,0,.95);
+}
+.ptitle::before{content:'';width:.24vw;height:.24vw;min-width:4px;min-height:4px;border:1px solid #aeddff;transform:rotate(45deg);flex:none}
+
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(160,80,255,.18),transparent);margin:.34vw 0}
+
 .dr{display:flex;align-items:baseline;justify-content:space-between;gap:.38vw;margin:.18vw 0}
-.dl{color:rgba(180,130,255,.34);font-size:clamp(4px,.30vw,8px);letter-spacing:.08em}
-.dv{font-family:'Orbitron',sans-serif;font-size:clamp(7px,.86vw,18px);color:#f0e8ff;text-shadow:0 0 8px rgba(180,80,255,.20);white-space:nowrap}
-.dv.or{color:var(--c3);text-shadow:0 0 8px rgba(255,154,92,.25)}
-.dv.yw{color:var(--c4);text-shadow:0 0 10px rgba(255,224,128,.28)}
-.dv.bl{color:var(--c5);text-shadow:0 0 8px rgba(136,204,255,.22)}
 
-/* ─── YOUTUBE TILE with play overlay ─── */
-.live-tile{aspect-ratio:16/9;background:rgba(4,0,14,.18);border:1px solid rgba(200,80,80,.16);border-radius:.24vw;overflow:hidden;position:relative;flex:none;backdrop-filter:blur(4px)}
-.live-head{position:absolute;top:0;left:0;right:0;background:rgba(140,0,0,.65);color:#fff;font-size:clamp(4px,.32vw,7.5px);letter-spacing:.15em;padding:.24vw .40vw;display:flex;align-items:center;gap:.4vw;z-index:4}
-/* Play overlay */
-#ytOverlay{
-  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5vw;
-  background:radial-gradient(ellipse at center,rgba(10,0,30,.88) 0%,rgba(4,0,16,.97) 100%);
-  z-index:3;cursor:pointer;transition:background .2s;
+/* Label — readable grey-white */
+.dl{
+  color:rgba(200,220,255,.80);
+  font-size:clamp(6px,.50vw,11px);
+  letter-spacing:.08em;
+  text-shadow:0 1px 3px rgba(0,0,0,.95);
 }
-#ytOverlay:hover{background:radial-gradient(ellipse at center,rgba(20,0,50,.88) 0%,rgba(8,0,24,.97) 100%)}
-#ytOverlay.hidden{display:none}
-/* countdown ring */
-.yt-ring-wrap{position:relative;display:flex;align-items:center;justify-content:center;width:clamp(40px,5vw,72px);height:clamp(40px,5vw,72px)}
-.yt-ring-svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
-.yt-ring-svg circle{fill:none;stroke:rgba(200,80,200,.55);stroke-width:2;stroke-dasharray:138;stroke-dashoffset:138;transition:stroke-dashoffset .85s linear}
-.yt-play-btn{
-  width:clamp(28px,3.5vw,52px);height:clamp(28px,3.5vw,52px);border-radius:50%;
-  border:2px solid rgba(200,80,200,.7);background:rgba(160,40,200,.20);
-  display:flex;align-items:center;justify-content:center;
-  font-size:clamp(12px,1.6vw,24px);color:rgba(220,140,255,.95);
-  transition:all .2s;box-shadow:0 0 clamp(8px,1.2vw,20px) rgba(180,60,255,.28);
-  position:relative;z-index:1;
-}
-#ytOverlay:hover .yt-play-btn{background:rgba(160,40,200,.45);border-color:rgba(220,140,255,.9);box-shadow:0 0 clamp(14px,2vw,32px) rgba(180,60,255,.5);transform:scale(1.08)}
-.yt-play-label{font-family:'Orbitron',sans-serif;font-size:clamp(5px,.46vw,10px);color:rgba(200,140,255,.75);letter-spacing:.18em}
-.yt-auto-label{font-size:clamp(4px,.30vw,7px);color:rgba(160,100,255,.42);letter-spacing:.12em}
-#ytFrame{position:absolute;inset:0;width:100%;height:100%;border:none;background:#000;display:none;z-index:2}
-.live-foot{position:absolute;bottom:0;left:0;right:0;padding:.16vw .36vw;font-size:clamp(4px,.28vw,7px);color:rgba(255,100,100,.45);z-index:4;background:linear-gradient(0deg,rgba(0,0,0,.45),transparent)}
-.live-foot a{color:rgba(255,130,130,.6);text-decoration:none}
 
-.met-panel{padding:.54vw .46vw}
-.met-big{font-family:'Share Tech Mono',monospace;font-weight:700;text-align:center;color:var(--c1);font-size:clamp(13px,1.9vw,42px);text-shadow:0 0 22px rgba(200,120,255,.55),0 0 50px rgba(160,60,255,.15);letter-spacing:.04em;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums}
-.met-lbl{margin-top:.14vw;text-align:center;font-size:clamp(4px,.28vw,7px);color:rgba(160,100,255,.28);letter-spacing:.18em}
+/* Value — bright white with colour accents */
+.dv{
+  font-family:'Orbitron',sans-serif;
+  font-size:clamp(8px,0.9vw,16px);
+  color:#ffffff;
+  text-shadow:0 0 8px rgba(200,160,255,.30),0 2px 4px rgba(0,0,0,.95);
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.dv.or{color:#ffcc88;text-shadow:0 0 10px rgba(255,180,80,.35),0 2px 4px rgba(0,0,0,.95)}
+.dv.yw{color:#ffee88;text-shadow:0 0 10px rgba(255,235,100,.35),0 2px 4px rgba(0,0,0,.95)}
+.dv.bl{color:#88eeff;text-shadow:0 0 10px rgba(100,230,255,.35),0 2px 4px rgba(0,0,0,.95)}
+
+/* ── LEFT: LIVE TILE ── */
+.live-tile{
+  aspect-ratio:16/9;background:#040010;
+  border:1px solid rgba(200,80,80,.22);border-radius:.24vw;overflow:hidden;position:relative;flex:none;
+}
+.live-head{
+  position:absolute;top:0;left:0;right:0;
+  background:rgba(160,0,0,.80);color:#fff;
+  font-size:clamp(5px,.38vw,8px);letter-spacing:.15em;
+  padding:.24vw .40vw;display:flex;align-items:center;gap:.4vw;z-index:3;
+  text-shadow:0 1px 3px rgba(0,0,0,.95);
+}
+#ytFrame{position:absolute;inset:0;width:100%;height:100%;border:none;background:#000;display:block;z-index:2}
+.live-foot{
+  position:absolute;bottom:0;left:0;right:0;padding:.16vw .36vw;
+  font-size:clamp(5px,.32vw,8px);color:#ffcccc;z-index:3;
+  background:linear-gradient(0deg,rgba(0,0,0,.55),transparent);
+  text-shadow:0 1px 3px rgba(0,0,0,.95);
+}
+.live-foot a{color:#ffcccc;text-decoration:none}
+.live-foot a:hover{color:#fff}
+
+/* MET clock */
+.met-panel{padding:.35vw .30vw}
+.met-big{
+  font-family:'Share Tech Mono',monospace;font-weight:700;text-align:center;
+  color:#ffffff;
+  font-size:clamp(10px,1.4vw,28px);
+  text-shadow:0 0 10px rgba(255,255,255,.20),0 0 22px rgba(210,140,255,.50),0 0 45px rgba(140,80,255,.18),0 2px 4px rgba(0,0,0,.95);
+  letter-spacing:.05em;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums;
+}
+.met-lbl{margin-top:.14vw;text-align:center;font-size:clamp(5px,.36vw,9px);color:rgba(200,220,255,.70);letter-spacing:.18em;text-shadow:0 1px 3px rgba(0,0,0,.95)}
+
 .crew-grid{display:grid;grid-template-columns:1fr 1fr;gap:.24vw}
-.crew-card{background:rgba(50,10,100,.06);border:1px solid rgba(140,60,220,.08);border-radius:.14vw;padding:.24vw .14vw;text-align:center}
-.crew-role{font-size:clamp(4px,.22vw,6px);color:rgba(160,100,255,.30)}
-.crew-name{margin-top:.06vw;font-size:clamp(5px,.34vw,8px);color:rgba(230,210,255,.68)}
+.crew-card{background:rgba(40,8,80,.55);border:1px solid rgba(140,60,200,.18);border-radius:.14vw;padding:.24vw .14vw;text-align:center;backdrop-filter:blur(6px)}
+.crew-role{font-size:clamp(5px,.30vw,7px);color:rgba(190,200,255,.65);text-shadow:0 1px 3px rgba(0,0,0,.95)}
+.crew-name{margin-top:.06vw;font-size:clamp(7px,.52vw,11px);color:#ffffff;text-shadow:0 0 8px rgba(200,140,255,.25),0 1px 3px rgba(0,0,0,.95)}
 
-.center-top,#progWrap{background:linear-gradient(160deg,rgba(22,6,50,.10),rgba(10,2,28,.18));backdrop-filter:blur(6px);border:1px solid rgba(180,100,255,.12);border-radius:.26vw}
-.center-top{padding:.40vw .52vw;display:flex;align-items:center;justify-content:space-between;gap:.5vw;box-shadow:inset 0 1px 0 rgba(200,120,255,.04)}
-.phase-line{font-family:'Orbitron',sans-serif;font-size:clamp(7px,.78vw,16px);color:var(--c4);letter-spacing:.09em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 16px rgba(255,224,128,.38)}
-.phase-sub{font-size:clamp(4px,.28vw,7px);color:rgba(160,100,255,.38);margin-top:.07vw}
-.map-head-right{font-size:clamp(4px,.30vw,7.5px);color:rgba(160,100,255,.42);text-align:right;white-space:nowrap}
-#mapWrap{flex:1;min-height:0;background:rgba(2,0,10,.20);border:1px solid rgba(140,80,220,.10);border-radius:.26vw;overflow:hidden;position:relative;box-shadow:inset 0 0 24px rgba(80,0,160,.06);backdrop-filter:blur(4px)}
+/* CENTER */
+.center-top,#progWrap{
+  background:var(--panel-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--panel-border);border-radius:.26vw;
+}
+.center-top{padding:.40vw .52vw;display:flex;align-items:center;justify-content:space-between;gap:.5vw}
+.phase-line{
+  font-family:'Orbitron',sans-serif;font-size:clamp(11px,1.25vw,26px);
+  color:#ffee88;letter-spacing:.09em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-shadow:0 0 12px rgba(255,235,100,.28),0 2px 4px rgba(0,0,0,.95);
+}
+.phase-sub{font-size:clamp(6px,.42vw,10px);color:rgba(200,220,255,.72);margin-top:.08vw;text-shadow:0 1px 3px rgba(0,0,0,.95)}
+.map-head-right{font-size:clamp(5px,.36vw,8px);color:rgba(190,210,255,.60);text-align:right;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.95)}
+
+#mapWrap{flex:1;min-height:0;background:rgba(2,0,10,.55);border:1px solid rgba(120,70,200,.14);border-radius:.26vw;overflow:hidden;position:relative;box-shadow:inset 0 0 28px rgba(60,0,140,.10)}
 #mapCanvas{display:block;width:100%;height:100%}
+
 #progWrap{padding:.38vw .50vw}
-.prog-labels{display:flex;justify-content:space-between;font-size:clamp(4px,.30vw,8px);color:rgba(160,100,255,.34);margin-bottom:.26vw}
-.prog-track{height:.18vw;min-height:3px;background:rgba(140,60,220,.07);border-radius:2px;position:relative}
-.prog-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#9955ff,#cc88ff,#ffe080);transition:width 1s linear;position:relative}
+.prog-labels{display:flex;justify-content:space-between;font-size:clamp(6px,.40vw,10px);color:rgba(200,220,255,.72);margin-bottom:.26vw;text-shadow:0 1px 3px rgba(0,0,0,.95)}
+.prog-track{height:.18vw;min-height:3px;background:rgba(120,60,200,.12);border-radius:2px;position:relative}
+.prog-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#8844ff,#cc88ff,#ffee66);transition:width 1s linear;position:relative}
 .prog-fill::after{content:'';position:absolute;right:-.20vw;top:-.20vw;width:.48vw;height:.48vw;min-width:7px;min-height:7px;background:var(--c4);border:1px solid var(--c4);transform:rotate(45deg);box-shadow:0 0 10px var(--c4)}
 
+/* RIGHT */
 .status-grid{display:flex;flex-direction:column;gap:.14vw}
 .sys-row{display:flex;align-items:center;justify-content:space-between;gap:.24vw}
-.sys-bar{flex:1;height:.14vw;min-height:2px;background:rgba(140,60,220,.07);border-radius:2px;margin:0 .26vw;overflow:hidden}
+.sys-bar{flex:1;height:.16vw;min-height:2px;background:rgba(120,60,200,.12);border-radius:2px;margin:0 .26vw;overflow:hidden}
 .sys-fill{height:100%;border-radius:2px}
-.sys-val{min-width:1.7vw;text-align:right;font-size:clamp(4px,.36vw,8.5px);color:var(--c1);font-family:'Orbitron',sans-serif}
+.sys-val{min-width:1.7vw;text-align:right;font-size:clamp(6px,.50vw,11px);color:#ffffff;font-family:'Orbitron',sans-serif;text-shadow:0 0 6px rgba(200,140,255,.28),0 1px 3px rgba(0,0,0,.95)}
+
 .compact-block .dr{margin:.12vw 0}
-.compact-block .dv{font-size:clamp(6px,.64vw,13px)}
+.compact-block .dv{font-size:clamp(10px,1.15vw,22px)}
+
 .timeline-panel{flex:1;min-height:0;display:flex;flex-direction:column}
 .timeline-scroll{flex:1;min-height:0;overflow-y:auto;padding-right:.10vw}
 .timeline-scroll::-webkit-scrollbar{width:4px}
-.timeline-scroll::-webkit-scrollbar-thumb{background:rgba(140,60,220,.22)}
-.tl-item{display:flex;align-items:flex-start;gap:.36vw;padding:.12vw 0;opacity:.30;transition:opacity .5s}
-.tl-item.done{opacity:.52}.tl-item.active{opacity:1}
-.tl-dot{width:.30vw;height:.30vw;min-width:5px;min-height:5px;border-radius:50%;border:1px solid rgba(160,80,255,.28);flex:none;margin-top:.10vw}
-.tl-item.done .tl-dot{background:rgba(180,100,255,.30);border-color:var(--c1)}
-.tl-item.active .tl-dot{background:var(--c1);border-color:var(--c1);box-shadow:0 0 10px var(--c1);animation:blink 1.3s infinite}
-.tl-name{font-size:clamp(4px,.34vw,7.5px);color:rgba(210,170,255,.85);letter-spacing:.07em}
-.tl-desc{font-size:clamp(3px,.25vw,6px);color:rgba(200,180,255,.28);margin-top:.02vw}
-.link-btn{display:block;text-decoration:none;text-align:center;padding:.26vw .38vw;margin-bottom:.20vw;border-radius:.14vw;font-size:clamp(4px,.32vw,7.5px);letter-spacing:.11em;transition:.2s}
-.link-btn:hover{filter:brightness(1.35)}
-.link-arow{background:rgba(100,60,200,.06);border:1px solid rgba(140,80,220,.18);color:var(--c1)}
-.link-yt{background:rgba(200,0,0,.05);border:1px solid rgba(200,0,0,.18);color:#ff5555}
-.src-lbl{margin-top:.18vw;text-align:center;font-size:clamp(3px,.24vw,6.5px);color:rgba(160,100,255,.24);letter-spacing:.10em}
+.timeline-scroll::-webkit-scrollbar-thumb{background:rgba(140,60,220,.25)}
+.tl-item{display:flex;align-items:flex-start;gap:.36vw;padding:.12vw 0;opacity:.35;transition:opacity .5s}
+.tl-item.done{opacity:.60}.tl-item.active{opacity:1}
+.tl-dot{width:.30vw;height:.30vw;min-width:5px;min-height:5px;border-radius:50%;border:1px solid rgba(160,80,255,.35);flex:none;margin-top:.10vw}
+.tl-item.done .tl-dot{background:rgba(180,100,255,.38);border-color:var(--c5)}
+.tl-item.active .tl-dot{background:#88eeff;border-color:#88eeff;box-shadow:0 0 10px #88eeff;animation:blink 1.3s infinite}
+.tl-name{font-size:clamp(6px,.46vw,10px);color:#e0f0ff;letter-spacing:.07em;text-shadow:0 1px 3px rgba(0,0,0,.95)}
+.tl-desc{font-size:clamp(5px,.32vw,8px);color:rgba(190,210,255,.65);margin-top:.02vw;text-shadow:0 1px 3px rgba(0,0,0,.95)}
 
+.link-btn{display:block;text-decoration:none;text-align:center;padding:.26vw .38vw;margin-bottom:.20vw;border-radius:.14vw;font-size:clamp(6px,.44vw,10px);letter-spacing:.11em;transition:.2s;text-shadow:0 1px 3px rgba(0,0,0,.95)}
+.link-btn:hover{filter:brightness(1.35)}
+.link-arow{background:rgba(80,50,180,.30);border:1px solid rgba(140,100,255,.40);color:#cce0ff}
+.link-yt{background:rgba(180,0,0,.28);border:1px solid rgba(255,80,80,.35);color:#ffcccc}
+.src-lbl{margin-top:.18vw;text-align:center;font-size:clamp(5px,.34vw,8px);color:rgba(200,220,255,.55);letter-spacing:.10em;text-shadow:0 1px 3px rgba(0,0,0,.95)}
+
+/* extra panels */
 .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:.22vw}
-.mini-card{background:rgba(40,10,80,.06);border:1px solid rgba(140,60,220,.08);border-radius:.14vw;padding:.24vw .22vw;min-height:2.4vw}
-.mini-label{font-size:clamp(3px,.23vw,6px);color:rgba(180,120,255,.34);letter-spacing:.10em}
-.mini-value{margin-top:.08vw;font-family:'Orbitron',sans-serif;font-size:clamp(5px,.56vw,12px);color:#ede0ff;white-space:nowrap}
+.mini-card{background:rgba(30,8,65,.65);border:1px solid rgba(120,60,200,.20);border-radius:.14vw;padding:.24vw .22vw;min-height:2.4vw;backdrop-filter:blur(6px)}
+.mini-label{font-size:clamp(5px,.32vw,8px);color:rgba(190,210,255,.65);letter-spacing:.10em;text-shadow:0 1px 3px rgba(0,0,0,.95)}
+.mini-value{margin-top:.08vw;font-family:'Orbitron',sans-serif;font-size:clamp(7px,.78vw,16px);color:#ffffff;white-space:nowrap;text-shadow:0 0 8px rgba(140,220,255,.18),0 1px 3px rgba(0,0,0,.95)}
+
 .att-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.20vw}
-.att-cell{background:rgba(40,10,80,.06);border:1px solid rgba(140,60,220,.08);border-radius:.14vw;padding:.26vw .20vw;text-align:center;min-height:2.2vw}
-.att-name{font-size:clamp(3px,.22vw,5.5px);color:rgba(180,120,255,.34)}
-.att-val{margin-top:.08vw;font-family:'Orbitron',sans-serif;font-size:clamp(5px,.56vw,12px);color:#ede0ff}
+.att-cell{background:rgba(30,8,65,.65);border:1px solid rgba(120,60,200,.20);border-radius:.14vw;padding:.26vw .20vw;text-align:center;min-height:2.2vw;backdrop-filter:blur(6px)}
+.att-name{font-size:clamp(5px,.32vw,8px);color:rgba(190,210,255,.65);text-shadow:0 1px 3px rgba(0,0,0,.95)}
+.att-val{margin-top:.08vw;font-family:'Orbitron',sans-serif;font-size:clamp(8px,.88vw,18px);color:#ffffff;text-shadow:0 0 8px rgba(200,140,255,.22),0 1px 3px rgba(0,0,0,.95)}
+
 .quat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.14vw}
-.quat-box{background:rgba(40,10,80,.06);border:1px solid rgba(140,60,220,.08);border-radius:.10vw;padding:.20vw;text-align:center;min-height:1.9vw}
-.quat-l{font-size:clamp(3px,.20vw,5px);color:rgba(180,120,255,.30)}
-.quat-v{margin-top:.04vw;font-size:clamp(4px,.30vw,7px);color:#e8d8ff}
+.quat-box{background:rgba(30,8,65,.65);border:1px solid rgba(120,60,200,.18);border-radius:.10vw;padding:.20vw;text-align:center;min-height:1.9vw;backdrop-filter:blur(4px)}
+.quat-l{font-size:clamp(5px,.30vw,7px);color:rgba(190,210,255,.58);text-shadow:0 1px 3px rgba(0,0,0,.95)}
+.quat-v{margin-top:.04vw;font-size:clamp(6px,.44vw,10px);color:#e8f4ff;text-shadow:0 1px 3px rgba(0,0,0,.95)}
+
 .thruster-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.14vw}
-.thruster{border:1px solid rgba(140,60,220,.10);background:rgba(20,4,50,.18);border-radius:.10vw;padding:.14vw;text-align:center;transition:.15s}
-.thruster.active{background:rgba(180,100,255,.12);border-color:rgba(200,120,255,.38);box-shadow:0 0 10px rgba(180,80,255,.12)}
-.thruster.warn{background:rgba(255,180,70,.08);border-color:rgba(255,180,70,.30)}
-.thruster-name{font-size:clamp(3px,.20vw,5px);color:rgba(180,140,255,.58)}
-.thruster-val{margin-top:.03vw;font-size:clamp(4px,.26vw,7px);color:#ede0ff}
+.thruster{border:1px solid rgba(120,60,200,.14);background:rgba(16,4,40,.60);border-radius:.10vw;padding:.14vw;text-align:center;transition:.15s;backdrop-filter:blur(4px)}
+.thruster.active{background:rgba(160,80,255,.22);border-color:rgba(200,130,255,.55);box-shadow:0 0 12px rgba(180,80,255,.22)}
+.thruster.warn{background:rgba(255,160,60,.16);border-color:rgba(255,160,60,.42)}
+.thruster-name{font-size:clamp(5px,.28vw,7px);color:rgba(200,220,255,.70);text-shadow:0 1px 3px rgba(0,0,0,.95)}
+.thruster-val{margin-top:.03vw;font-size:clamp(6px,.40vw,9px);color:#ffffff;text-shadow:0 1px 3px rgba(0,0,0,.95)}
+
 .event-grid{display:grid;grid-template-columns:1fr 1fr;gap:.16vw}
-.event-flag{display:flex;align-items:center;justify-content:space-between;gap:.18vw;background:rgba(20,4,50,.18);border:1px solid rgba(140,60,220,.10);border-radius:.12vw;padding:.22vw .24vw;min-height:1.9vw}
-.event-name{font-size:clamp(3px,.22vw,6px);color:rgba(180,140,255,.60);white-space:nowrap}
-.event-dot{width:.36vw;height:.36vw;min-width:5px;min-height:5px;border-radius:50%;background:rgba(140,80,220,.14);border:1px solid rgba(140,80,220,.22)}
+.event-flag{display:flex;align-items:center;justify-content:space-between;gap:.18vw;background:rgba(16,4,40,.60);border:1px solid rgba(120,60,200,.16);border-radius:.12vw;padding:.22vw .24vw;min-height:1.9vw;backdrop-filter:blur(4px)}
+.event-name{font-size:clamp(5px,.32vw,8px);color:rgba(200,220,255,.80);white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.95)}
+.event-dot{width:.36vw;height:.36vw;min-width:5px;min-height:5px;border-radius:50%;background:rgba(120,80,200,.20);border:1px solid rgba(120,80,200,.30)}
 .event-dot.on{background:var(--ok);border-color:var(--ok);box-shadow:0 0 8px var(--ok)}
 .event-dot.warn{background:var(--warn);border-color:var(--warn);box-shadow:0 0 8px var(--warn)}
+
+/* ── INSTRUCTIONS TOOLTIP ── */
+#infoBtn{
+  position:absolute;bottom:.6vw;right:.6vw;z-index:29;
+  width:clamp(18px,1.4vw,26px);height:clamp(18px,1.4vw,26px);
+  border-radius:50%;background:rgba(140,80,255,.22);border:1px solid rgba(180,100,255,.40);
+  color:#ccaaff;font-size:clamp(9px,.9vw,16px);line-height:1;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-family:'Orbitron',sans-serif;font-weight:900;
+  box-shadow:0 0 10px rgba(140,80,255,.20);
+  transition:background .2s;pointer-events:auto;
+}
+#infoBtn:hover{background:rgba(180,100,255,.38)}
+#infoPanel{
+  position:absolute;bottom:clamp(22px,2.4vw,40px);right:.5vw;z-index:29;
+  width:clamp(220px,26vw,420px);
+  background:rgba(8,4,24,.96);border:1px solid rgba(180,100,255,.32);border-radius:.3vw;
+  padding:.7vw .8vw;pointer-events:auto;
+  box-shadow:0 0 30px rgba(0,0,0,.60);
+  display:none;
+}
+#infoPanel.open{display:block}
+#infoPanel h3{font-family:'Orbitron',sans-serif;font-size:clamp(8px,.75vw,14px);color:#ccaaff;letter-spacing:.18em;margin-bottom:.5vw;text-shadow:0 0 10px rgba(200,140,255,.30)}
+#infoPanel p,#infoPanel li{font-size:clamp(7px,.60vw,12px);color:rgba(210,225,255,.85);line-height:1.65;text-shadow:0 1px 3px rgba(0,0,0,.95)}
+#infoPanel ul{padding-left:1.2em;margin-top:.3vw}
+#infoPanel li{margin-bottom:.2vw}
+#infoPanel .section{margin-top:.5vw;padding-top:.4vw;border-top:1px solid rgba(160,80,255,.16)}
+#infoPanel .lbl{color:#88eeff;font-weight:700}
 </style>
 </head>
 <body>
@@ -181,15 +342,18 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
   <div class="scene-inner">
     <div class="aspect-box">
       <img id="bg" src="back-artemis.png" alt=""/>
+
       <div class="window-viewport">
         <div id="hud">
           <div class="holo-lines"></div>
           <div class="holo-scan"></div>
           <div class="holo-edge"></div>
-          <div class="holo-corner hc-tl"><svg viewBox="0 0 32 32"><path d="M2 30L2 2L30 2" fill="none" stroke="#cc88ff" stroke-width="1.2" opacity=".4"/><path d="M2 2L11 2M2 2L2 11" fill="none" stroke="#cc88ff" stroke-width="2.5" opacity=".9"/></svg></div>
-          <div class="holo-corner hc-tr"><svg viewBox="0 0 32 32"><path d="M2 30L2 2L30 2" fill="none" stroke="#cc88ff" stroke-width="1.2" opacity=".4"/><path d="M2 2L11 2M2 2L2 11" fill="none" stroke="#cc88ff" stroke-width="2.5" opacity=".9"/></svg></div>
-          <div class="holo-corner hc-bl"><svg viewBox="0 0 32 32"><path d="M2 30L2 2L30 2" fill="none" stroke="#cc88ff" stroke-width="1.2" opacity=".4"/><path d="M2 2L11 2M2 2L2 11" fill="none" stroke="#cc88ff" stroke-width="2.5" opacity=".9"/></svg></div>
-          <div class="holo-corner hc-br"><svg viewBox="0 0 32 32"><path d="M2 30L2 2L30 2" fill="none" stroke="#cc88ff" stroke-width="1.2" opacity=".4"/><path d="M2 2L11 2M2 2L2 11" fill="none" stroke="#cc88ff" stroke-width="2.5" opacity=".9"/></svg></div>
+
+          <div class="holo-corner hc-tl"><svg viewBox="0 0 32 32"><path d="M2 30L2 2L30 2" fill="none" stroke="#cc88ff" stroke-width="1.2" opacity=".45"/><path d="M2 2L11 2M2 2L2 11" fill="none" stroke="#cc88ff" stroke-width="2.5" opacity=".95"/></svg></div>
+          <div class="holo-corner hc-tr"><svg viewBox="0 0 32 32"><path d="M2 30L2 2L30 2" fill="none" stroke="#cc88ff" stroke-width="1.2" opacity=".45"/><path d="M2 2L11 2M2 2L2 11" fill="none" stroke="#cc88ff" stroke-width="2.5" opacity=".95"/></svg></div>
+          <div class="holo-corner hc-bl"><svg viewBox="0 0 32 32"><path d="M2 30L2 2L30 2" fill="none" stroke="#cc88ff" stroke-width="1.2" opacity=".45"/><path d="M2 2L11 2M2 2L2 11" fill="none" stroke="#cc88ff" stroke-width="2.5" opacity=".95"/></svg></div>
+          <div class="holo-corner hc-br"><svg viewBox="0 0 32 32"><path d="M2 30L2 2L30 2" fill="none" stroke="#cc88ff" stroke-width="1.2" opacity=".45"/><path d="M2 2L11 2M2 2L2 11" fill="none" stroke="#cc88ff" stroke-width="2.5" opacity=".95"/></svg></div>
+
           <div id="topBar">
             <div class="header-wrap">
               <div class="mission-title">ARTEMIS II · ORION</div>
@@ -197,24 +361,22 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
             </div>
             <div class="live-badge"><div class="live-dot"></div>LIVE</div>
           </div>
+
           <div id="main">
-            <!-- LEFT COL -->
+            <!-- ── LEFT COLUMN ── -->
             <div class="col">
+              <!-- YouTube live feed — autoplay+muted, browser policy compliant -->
               <div class="live-tile">
-                <div class="live-head"><div class="live-dot" style="flex:none"></div>NASA OFFICIAL BROADCAST</div>
-                <!-- 5s countdown overlay -->
-                <div id="ytOverlay">
-                  <div class="yt-ring-wrap">
-                    <svg class="yt-ring-svg" viewBox="0 0 46 46"><circle id="cdCircle" cx="23" cy="23" r="21"/></svg>
-                    <div class="yt-play-btn">&#9654;</div>
-                  </div>
-                  <div class="yt-play-label">PLAY NASA LIVE STREAM</div>
-                  <div class="yt-auto-label" id="cdLabel">AUTO-START IN 5s · CLICK TO START NOW</div>
-                </div>
-                <!-- iframe — src set ONCE, never touched again -->
-                <iframe id="ytFrame" src="about:blank" title="Artemis II NASA Live" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;web-share" allowfullscreen></iframe>
+                <div class="live-head"><div class="live-dot" style="flex:none;background:#ff4444;box-shadow:0 0 8px #ff4444"></div>NASA OFFICIAL BROADCAST</div>
+                <iframe id="ytFrame"
+                  src="https://www.youtube.com/embed/m3kR2KK8TEs?controls=1&autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=0"
+                  title="Artemis II NASA Live"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen></iframe>
                 <div class="live-foot">NASA TV · <a href="https://www.youtube.com/watch?v=m3kR2KK8TEs" target="_blank">Open on YouTube ↗</a></div>
               </div>
+
+              <!-- Navigation telemetry -->
               <div class="panel met-panel">
                 <div class="ptitle">Navigation</div>
                 <div class="met-big" id="metDisplay">00:00:00</div>
@@ -225,8 +387,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
                 <div class="dr"><span class="dl">VELOCITY</span><span class="dv or" id="vVel">—</span></div>
                 <div class="dr"><span class="dl">COMM DELAY</span><span class="dv bl" id="vComm">—</span></div>
                 <div class="divider"></div>
-                <div class="dr"><span class="dl">PHASE</span><span class="dv bl" id="vPhase" style="font-size:clamp(5px,.58vw,12px)">—</span></div>
+                <div class="dr"><span class="dl">PHASE</span><span class="dv bl" id="vPhase">—</span></div>
               </div>
+
+              <!-- Crew manifest -->
               <div class="panel">
                 <div class="ptitle">Crew</div>
                 <div class="crew-grid">
@@ -236,12 +400,15 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
                   <div class="crew-card"><div class="crew-role">MS-2</div><div class="crew-name">Hansen</div></div>
                 </div>
               </div>
+
+              <!-- Mission timeline -->
               <div class="panel timeline-panel">
                 <div class="ptitle">Mission Timeline</div>
                 <div class="timeline-scroll" id="tlContainer"></div>
               </div>
             </div>
-            <!-- CENTER COL -->
+
+            <!-- ── CENTER COLUMN ── -->
             <div class="col">
               <div class="center-top">
                 <div>
@@ -260,8 +427,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
                 <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
               </div>
             </div>
-            <!-- RIGHT COL -->
+
+            <!-- ── RIGHT COLUMN (scrollable) ── -->
             <div class="col col-right-scroll">
+              <!-- Vehicle systems -->
               <div class="panel">
                 <div class="ptitle">Vehicle Status</div>
                 <div class="status-grid">
@@ -280,6 +449,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
                   <div class="dr"><span class="dl">LONGITUDE</span><span class="dv" id="vLon">—</span></div>
                 </div>
               </div>
+
+              <!-- Attitude / quaternion -->
               <div class="panel">
                 <div class="ptitle">Attitude</div>
                 <div class="att-grid">
@@ -295,6 +466,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
                   <div class="quat-box"><div class="quat-l">QW</div><div class="quat-v" id="qW">—</div></div>
                 </div>
               </div>
+
+              <!-- Solar arrays -->
               <div class="panel">
                 <div class="ptitle">Solar Arrays</div>
                 <div class="mini-grid">
@@ -304,10 +477,14 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
                   <div class="mini-card"><div class="mini-label">SAW4 IG / OG</div><div class="mini-value" id="saw4">—</div></div>
                 </div>
               </div>
+
+              <!-- Thrusters -->
               <div class="panel">
                 <div class="ptitle">Thrusters</div>
                 <div class="thruster-grid" id="thrusterGrid"></div>
               </div>
+
+              <!-- Event flags -->
               <div class="panel">
                 <div class="ptitle">Event Flags</div>
                 <div class="event-grid">
@@ -319,6 +496,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
                   <div class="event-flag"><span class="event-name">SM SEP</span><span class="event-dot" id="evtSMSep"></span></div>
                 </div>
               </div>
+
+              <!-- External links -->
               <div class="panel">
                 <div class="ptitle">External Links</div>
                 <a class="link-btn link-arow" href="https://www.nasa.gov/trackartemis" target="_blank">NASA AROW TRACKER ↗</a>
@@ -326,359 +505,396 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
                 <div class="src-lbl" id="srcBadge">PHYSICS MODEL ACTIVE</div>
               </div>
             </div>
-          </div>
+          </div><!-- /main -->
+
+          <!-- glass effects -->
           <div class="glass-layer"><div class="glass-sheen"></div><div class="glass-glow"></div></div>
           <div class="edge-reflection"></div>
-        </div>
-      </div>
+
+          <!-- Instructions button -->
+          <div id="infoBtn" onclick="toggleInfo()">?</div>
+          <div id="infoPanel">
+            <h3>HOW THIS WORKS</h3>
+            <p>This display shows the real-time position of NASA's Orion spacecraft during the Artemis II mission.</p>
+            <div class="section">
+              <p><span class="lbl">Data sources (priority order):</span></p>
+              <ul>
+                <li><span class="lbl">NASA AROW LIVE</span> — live telemetry from NASA's Artemis Real-time Orbit Website bucket. Updates every ~55s. Provides exact position, velocity, attitude quaternions, solar array angles and thruster data.</li>
+                <li><span class="lbl">NASA OEM FILE</span> — official ephemeris file published at nasa.gov. Contains thousands of position points at 4-minute intervals. Loaded once, used as high-accuracy trajectory.</li>
+                <li><span class="lbl">PHYSICS MODEL</span> — fallback when no live data is available. A mathematical approximation of the mission trajectory built from the mission profile.</li>
+              </ul>
+            </div>
+            <div class="section">
+              <p><span class="lbl">Map legend:</span></p>
+              <ul>
+                <li>Bright trail = Orion's path so far (gradient: blue → white)</li>
+                <li>Dim line = full planned trajectory</li>
+                <li>Dashed gold circle = Moon's orbital path</li>
+                <li>Gold trail = Moon's recent path (5-day history)</li>
+                <li>Rotating arc on Earth = radar sweep (visual only)</li>
+              </ul>
+            </div>
+            <div class="section">
+              <p><span class="lbl">Time sync:</span> When AROW live data is active, the MET clock is driven by the spacecraft's onboard timer (Parameter 5001), not your local clock. The Moon and Orion positions are computed for this mission-time, keeping everything in sync.</p>
+            </div>
+            <div class="section">
+              <p><span class="lbl">Smooth animation:</span> Orion's icon is lerp-smoothed (factor 0.025/frame) toward the true computed position, eliminating jumps when new data arrives. When switching to OEM, positions blend gradually.</p>
+            </div>
+            <div class="section">
+              <p><span class="lbl">YouTube feed:</span> Starts automatically muted (browser autoplay policy). Use the player controls to unmute. Click "Open on YouTube" to watch full-screen.</p>
+            </div>
+          </div>
+        </div><!-- /hud -->
+      </div><!-- /window-viewport -->
+
       <img id="front" src="front-artemis.png" alt=""/>
     </div>
   </div>
 </div>
 
 <script>
-/* ═══════════════════════════════════════════════
-   YOUTUBE 5s COUNTDOWN + AUTOPLAY
-   iframe src set ONCE — never touched again
-   → no rebuffering on resize/layout changes
-═══════════════════════════════════════════════ */
-const YT_SRC = 'https://www.youtube.com/embed/m3kR2KK8TEs?controls=1&autoplay=1&mute=0&rel=0&modestbranding=1&playsinline=1';
-const AUTO_DELAY = 5;
-const ytOverlay = document.getElementById('ytOverlay');
-const ytFrame   = document.getElementById('ytFrame');
-const cdCircle  = document.getElementById('cdCircle');
-const cdLabel   = document.getElementById('cdLabel');
-let ytStarted = false, cdLeft = AUTO_DELAY;
-// circumference of r=21 circle ≈ 132
-const CIRC = 2 * Math.PI * 21;
-cdCircle.style.strokeDasharray = CIRC;
-cdCircle.style.strokeDashoffset = CIRC;
+// ─── VIEWPORT POSITIONING ────────────────────────────────────
+// Measured from the purple cockpit image (1456×816):
+// Black screen area: left≈211, top≈37, right≈1114, bottom≈538
+// Fractions: x=211/1456, y=37/816, w=(1114-211)/1456, h=(538-37)/816
+const HUD_WINDOW = { x:0.141, y:0.115, w:0.63, h:0.652 };
 
-function startStream(){
-  if(ytStarted) return;
-  ytStarted = true;
-  ytFrame.src = YT_SRC;
-  ytFrame.style.display = 'block';
-  ytOverlay.classList.add('hidden');
-}
-ytOverlay.addEventListener('click', startStream);
-
-const cdTimer = setInterval(() => {
-  cdLeft--;
-  cdCircle.style.strokeDashoffset = CIRC * (cdLeft / AUTO_DELAY);
-  if(cdLeft <= 0){
-    clearInterval(cdTimer);
-    cdLabel.textContent = 'STARTING STREAM...';
-    setTimeout(startStream, 150);
-  } else {
-    cdLabel.textContent = `AUTO-START IN ${cdLeft}s · CLICK TO START NOW`;
-  }
-}, 1000);
-
-/* ═══════════════════════════════════════════════
-   HUD VIEWPORT POSITIONING
-═══════════════════════════════════════════════ */
-const HUD_WINDOW = {x:0.141, y:0.115, w:0.63, h:0.652};
 const aspectBox  = document.querySelector('.aspect-box');
 const viewportEl = document.querySelector('.window-viewport');
 const frontImg   = document.getElementById('front');
 const backImg    = document.getElementById('bg');
 
 function updateViewport(){
-  const boxW=aspectBox.clientWidth||window.innerWidth, boxH=aspectBox.clientHeight||window.innerHeight;
-  const imgW=frontImg.naturalWidth||backImg.naturalWidth||1456, imgH=frontImg.naturalHeight||backImg.naturalHeight||816;
-  const imgR=imgW/imgH, boxR=boxW/boxH;
-  let drawW,drawH,offX=0,offY=0;
-  if(boxR>imgR){drawW=boxW;drawH=boxW/imgR;offY=(boxH-drawH)/2;}
-  else{drawH=boxH;drawW=boxH*imgR;offX=(boxW-drawW)/2;}
-  viewportEl.style.left  =(offX+drawW*HUD_WINDOW.x)+'px';
-  viewportEl.style.top   =(offY+drawH*HUD_WINDOW.y)+'px';
-  viewportEl.style.width =(drawW*HUD_WINDOW.w)+'px';
-  viewportEl.style.height=(drawH*HUD_WINDOW.h)+'px';
+  const boxW = aspectBox.clientWidth  || window.innerWidth;
+  const boxH = aspectBox.clientHeight || window.innerHeight;
+  const imgW = frontImg.naturalWidth  || backImg.naturalWidth  || 1456;
+  const imgH = frontImg.naturalHeight || backImg.naturalHeight || 816;
+  const imgR = imgW/imgH, boxR = boxW/boxH;
+  let drawW, drawH, offX=0, offY=0;
+  if(boxR>imgR){ drawW=boxW; drawH=boxW/imgR; offY=(boxH-drawH)/2; }
+  else{ drawH=boxH; drawW=boxH*imgR; offX=(boxW-drawW)/2; }
+  viewportEl.style.left   = (offX + drawW*HUD_WINDOW.x) + 'px';
+  viewportEl.style.top    = (offY + drawH*HUD_WINDOW.y) + 'px';
+  viewportEl.style.width  = (drawW*HUD_WINDOW.w) + 'px';
+  viewportEl.style.height = (drawH*HUD_WINDOW.h) + 'px';
 }
 new ResizeObserver(updateViewport).observe(aspectBox);
 frontImg.addEventListener('load', updateViewport);
-backImg.addEventListener('load', updateViewport);
+backImg.addEventListener('load',  updateViewport);
 updateViewport();
 
-/* ═══════════════════════════════════════════════
-   MISSION CONSTANTS — REAL ARTEMIS II DATA
-   Launch: Apr 1 2026 22:35 UTC
-   TLI:    Apr 2 ~23:00 UTC (~24.4h)
-   Flyby:  Apr 6 ~4,066 miles (6,540 km) closest
-   Max:    ~252,757 miles (406,800 km)
-   Splashdown: Apr 10 ~00:07 UTC off San Diego
-═══════════════════════════════════════════════ */
+// Instructions toggle
+function toggleInfo(){
+  document.getElementById('infoPanel').classList.toggle('open');
+}
+document.addEventListener('click', e=>{
+  const panel=document.getElementById('infoPanel');
+  const btn=document.getElementById('infoBtn');
+  if(panel.classList.contains('open') && !panel.contains(e.target) && e.target!==btn){
+    panel.classList.remove('open');
+  }
+});
+
+// ─── CONSTANTS ───────────────────────────────────────────────
 const LAUNCH   = new Date('2026-04-01T22:35:00Z');
-const DUR      = 9.25 * 24 * 3600;
+const DUR      = 10 * 24 * 3600;
 const MOON_A   = 384400;
-const MOON_PER = 27.321661*24*3600;
-const MOON_L0  = 218.3*Math.PI/180;
+const MOON_PER = 27.321661 * 24 * 3600;
+const MOON_L0  = 218.3 * Math.PI / 180;
 const J2000    = new Date('2000-01-01T12:00:00Z');
 const PROXY    = 'https://api.allorigins.win/get?url=';
 
-// Flyby time: launch + 5.0 days = Apr 6 22:35 UTC
-// After flyby, flag stays on Moon permanently
-const FLYBY_T = LAUNCH.getTime() + 5.0*24*3600*1000;
-const RETURN_T = LAUNCH.getTime() + 6.5*24*3600*1000;
-
 const MILESTONES = [
-  {label:'LAUNCH',         t:0,              desc:'SLS liftoff · LC-39B · Apr 1 22:35 UTC'},
-  {label:'EARTH ORBIT',    t:.5*3600,        desc:'Parking orbit · solar arrays deployed'},
-  {label:'TLI BURN',       t:24.4*3600,      desc:'Trans-Lunar Injection · Apr 2 ~23:00 UTC'},
-  {label:'DEEP SPACE',     t:26*3600,        desc:'Beyond Earth orbit · Deep Space Network'},
-  {label:'LUNAR APPROACH', t:4.0*24*3600,    desc:'Entering lunar sphere of influence'},
-  {label:'LUNAR FLYBY',    t:5.0*24*3600,    desc:'~6,540 km closest pass · Apr 6'},
-  {label:'MAX DISTANCE',   t:6.1*24*3600,    desc:'~406,800 km from Earth · mission record'},
-  {label:'RETURN BURN',    t:6.5*24*3600,    desc:'Homeward trajectory burn'},
-  {label:'REENTRY',        t:9.23*24*3600,   desc:'Atmospheric entry · ~11 km/s'},
-  {label:'SPLASHDOWN',     t:9.24*24*3600,   desc:'Pacific · San Diego · USS Murtha · Apr 10'},
+  {label:'LAUNCH',         t:0,            desc:'SLS liftoff · LC-39B'},
+  {label:'EARTH ORBIT',    t:.5*3600,       desc:'Parking orbit insertion'},
+  {label:'TLI BURN',       t:25.23*3600,    desc:'Trans-Lunar Injection'},
+  {label:'DEEP SPACE',     t:30*3600,       desc:'Beyond Earth orbit'},
+  {label:'LUNAR APPROACH', t:4.2*24*3600,   desc:'Moon in sight'},
+  {label:'LUNAR FLYBY',    t:5.2*24*3600,   desc:'~7 600 km closest pass'},
+  {label:'MAX DISTANCE',   t:6*24*3600,     desc:'Record distance from Earth'},
+  {label:'RETURN BURN',    t:6.5*24*3600,   desc:'Homeward trajectory'},
+  {label:'REENTRY',        t:9.8*24*3600,   desc:'Atmospheric entry'},
+  {label:'SPLASHDOWN',     t:10*24*3600,    desc:'Pacific Ocean recovery'},
 ];
 
-const THRUSTER_KEYS=['attMotorSD5A','attMotorSR4R','attMotorSR3L','attMotorSR3R','attMotorSD6A','attMotorSD5F','attMotorSD6F','attMotorSA3F','attMotorSB5F','attMotorSA3A','attMotorSA4F','attMotorSA4A','attMotorSC1F','attMotorSC1A','attMotorSC2A','attMotorSR4L','attMotorSB5A','attMotorSB6F','attMotorSC2F','attMotorSB6A','attMotorSR2L','attMotorSR2R','attMotorSR1L','attMotorSR1R'];
+const THRUSTER_KEYS = [
+  'attMotorSD5A','attMotorSR4R','attMotorSR3L','attMotorSR3R','attMotorSD6A','attMotorSD5F',
+  'attMotorSD6F','attMotorSA3F','attMotorSB5F','attMotorSA3A','attMotorSA4F','attMotorSA4A',
+  'attMotorSC1F','attMotorSC1A','attMotorSC2A','attMotorSR4L','attMotorSB5A','attMotorSB6F',
+  'attMotorSC2F','attMotorSB6A','attMotorSR2L','attMotorSR2R','attMotorSR1L','attMotorSR1R'
+];
 
-const fkm  = k=>k>=1e6?(k/1e6).toFixed(2)+'M km':k>=1e5?(k/1e3).toFixed(1)+'k km':Math.round(k).toLocaleString('en-US')+' km';
-const fkms = v=>v.toFixed(2)+' km/s';
-const fmet = s=>{
+// ─── HELPERS ─────────────────────────────────────────────────
+const fkm  = k => k>=1e6?(k/1e6).toFixed(2)+'M km':k>=1e5?(k/1e3).toFixed(1)+'k km':Math.round(k).toLocaleString('en-US')+' km';
+const fkms = v => v.toFixed(2)+' km/s';
+const fmet = s => {
   s=Math.max(0,Math.floor(s));
   const d=Math.floor(s/86400),h=Math.floor((s%86400)/3600),m=Math.floor((s%3600)/60),sc=s%60;
-  return d>0?`${d}D ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`:`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;
+  return d>0?`${d}D ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`
+            :`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;
 };
-const fRem = s=>{const l=Math.max(0,DUR-s),d=Math.floor(l/86400),h=Math.floor((l%86400)/3600);return `${d}d ${h}h left`;};
-const lerp = (a,b,t)=>a+(b-a)*t;
-const ease = t=>t*t*(3-2*t);
+const fRem = s => { const l=Math.max(0,DUR-s),d=Math.floor(l/86400),h=Math.floor((l%86400)/3600); return `${d}d ${h}h left`; };
+const lerp = (a,b,t) => a+(b-a)*t;
+const ease = t => t*t*(3-2*t);
 
+// ─── MOON POSITION — accurate elliptic + time-synced ─────────
+// The Moon's position is computed from mission time (simNow), not wall clock,
+// so it stays in sync with the spacecraft position when AROW live data is active.
 function getMoonPos(t){
-  const dt=(t-J2000)/1000, ang=MOON_L0+(dt/MOON_PER)*2*Math.PI;
-  const e=0.0549; let M=((ang%(2*Math.PI))+2*Math.PI)%(2*Math.PI), E=M;
-  E=M+e*Math.sin(E); E=M+e*Math.sin(E);
-  const ta=2*Math.atan2(Math.sqrt(1+e)*Math.sin(E/2),Math.sqrt(1-e)*Math.cos(E/2));
-  return {x:MOON_A*(1-e*Math.cos(E))*Math.cos(ta), y:MOON_A*(1-e*Math.cos(E))*Math.sin(ta)};
+  const dt  = (t - J2000) / 1000;
+  const ang = MOON_L0 + (dt / MOON_PER) * 2 * Math.PI;
+  const e   = 0.0549;
+  let M = ((ang % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+  let E = M; E = M+e*Math.sin(E); E = M+e*Math.sin(E);   // 2× Newton iter
+  const ta = 2*Math.atan2(Math.sqrt(1+e)*Math.sin(E/2), Math.sqrt(1-e)*Math.cos(E/2));
+  const r  = MOON_A * (1 - e*Math.cos(E));
+  return { x: r*Math.cos(ta), y: r*Math.sin(ta) };
 }
 
-function getPhase(ed,md){
-  if(ed<25000)             return['EARTH ORBIT',      'Parking orbit · ~400 km altitude'];
-  if(ed<200000&&md>80000)  return['OUTBOUND TO MOON', 'Trans-Lunar trajectory active'];
-  if(md<=80000&&md>10000)  return['LUNAR APPROACH',   'Entering lunar gravity well'];
-  if(md<=10000)            return['LUNAR FLYBY',      `Closest pass · ${fkm(md)} from surface`];
-  if(ed>300000)            return['DEEP SPACE TRANSIT','Beyond 300,000 km · record territory'];
-  if(ed<300000&&md>50000)  return['RETURN TO EARTH',  'Homeward burn complete'];
-  return['DEEP SPACE TRANSIT','Maximum distance from Earth'];
+function getPhase(ed, md){
+  if(ed<20000)            return ['EARTH ORBIT',     'Parking orbit · ~400 km'];
+  if(ed<150000&&md>80000) return ['OUTBOUND TO MOON', 'Trans-Lunar trajectory active'];
+  if(md<80000&&md>20000)  return ['LUNAR APPROACH',   'Entering lunar gravity well'];
+  if(md<20000)            return ['LUNAR FLYBY',      'Closest approach'];
+  if(ed<300000&&md>50000) return ['RETURN TO EARTH',  'Homeward burn complete'];
+  return                         ['DEEP SPACE TRANSIT','Maximum distance from Earth'];
 }
 
+// ─── PHYSICS TRAJECTORY ──────────────────────────────────────
 function buildPhysics(){
-  const vecs=[],t0=LAUNCH.getTime(),DUR_MS=DUR*1000;
-  for(let ms=0;ms<=DUR_MS;ms+=60000){
-    const t=new Date(t0+ms),frac=ms/DUR_MS,moon=getMoonPos(t);
+  const vecs=[], t0=LAUNCH.getTime();
+  for(let ms=0; ms<=DUR*1000; ms+=60000){
+    const t=new Date(t0+ms), frac=ms/(DUR*1000), moon=getMoonPos(t);
     let x,y,vx=0,vy=0;
-    if(frac<0.042){
-      const a=frac/0.042*3*Math.PI,r=6563+frac*22000;
-      x=r*Math.cos(a);y=r*Math.sin(a);
-      vx=-Math.sqrt(398600/r)*Math.sin(a);vy=Math.sqrt(398600/r)*Math.cos(a);
-    } else if(frac<0.115){
-      const tf=(frac-0.042)/0.073,r=28000+tf*90000,a=3*Math.PI+tf*0.9;
-      x=r*Math.cos(a);y=r*Math.sin(a);vx=9-tf*5;vy=2.5;
-    } else if(frac<0.54){
-      const tf=(frac-0.115)/0.425,e=ease(tf);
-      const moonDist=100000+(6540-100000)*e;
-      const moonAng=Math.atan2(moon.y,moon.x);
-      const approachAng=moonAng+Math.PI+tf*0.4;
-      x=moon.x+moonDist*Math.cos(approachAng);
-      y=moon.y+moonDist*Math.sin(approachAng);
-      const sp=lerp(3.2,0.95,tf);
-      vx=sp*Math.cos(approachAng+Math.PI/2);vy=sp*Math.sin(approachAng+Math.PI/2);
-    } else if(frac<0.66){
-      const tf=(frac-0.54)/0.12;
-      const moonAng=Math.atan2(moon.y,moon.x);
-      const r=6540+tf*tf*(3-2*tf)*54000;
-      const arcAng=moonAng+Math.PI+0.4+tf*2.0*Math.PI;
-      x=moon.x+r*Math.cos(arcAng);y=moon.y+r*Math.sin(arcAng);
-      const sp=1.1+tf*0.6;vx=sp*Math.cos(arcAng+Math.PI/2);vy=sp*Math.sin(arcAng+Math.PI/2);
+    if(frac<0.04){
+      const a=frac/0.04*3*Math.PI, r=6563+frac*30000;
+      x=r*Math.cos(a); y=r*Math.sin(a);
+      vx=-Math.sqrt(398600/r)*Math.sin(a); vy=Math.sqrt(398600/r)*Math.cos(a);
+    } else if(frac<0.08){
+      const tf=(frac-.04)/.04, r=36000+tf*50000, a=3*Math.PI+tf*.8;
+      x=r*Math.cos(a); y=r*Math.sin(a); vx=8-tf*5; vy=2;
+    } else if(frac<0.44){
+      const tf=(frac-.08)/.36, e=ease(tf);
+      x=lerp(80000*Math.cos(4.6), moon.x*.92, e);
+      y=lerp(80000*Math.sin(4.6), moon.y*.92, e);
+      vx=lerp(3.5,1,tf); vy=vx*.3;
+    } else if(frac<0.58){
+      const tf=(frac-.44)/.14, a=Math.PI+tf*1.6*Math.PI, r=6000+15000*Math.sin(tf*Math.PI);
+      x=moon.x+r*Math.cos(a); y=moon.y+r*Math.sin(a);
+      const sp=2.2+tf*.3; vx=-sp*Math.sin(a); vy=sp*Math.cos(a);
     } else {
-      const tf=(frac-0.66)/0.34,e=ease(tf),mn=getMoonPos(t);
-      const moonAng=Math.atan2(mn.y,mn.x);
-      const sx=mn.x+60000*Math.cos(moonAng+Math.PI+0.4+2.0*Math.PI);
-      const sy=mn.y+60000*Math.sin(moonAng+Math.PI+0.4+2.0*Math.PI);
-      x=lerp(sx,0,e);y=lerp(sy,0,e);
-      const sp=lerp(0.9,11.2,tf),l=Math.sqrt(x*x+y*y)||1;
-      vx=-sp*(x/l);vy=-sp*(y/l);
+      const tf=(frac-.58)/.42, e=ease(tf), mn=getMoonPos(t);
+      const sx=mn.x+4000*Math.cos(4.712), sy=mn.y+4000*Math.sin(4.712);
+      x=lerp(sx,0,e); y=lerp(sy,0,e);
+      const sp=lerp(1,11,tf), l=Math.sqrt(x*x+y*y)||1;
+      vx=-sp*(x/l); vy=-sp*(y/l);
     }
     vecs.push({t,x,y,vx,vy});
   }
   return vecs;
 }
 
-function interpolate(vecs,t){
-  if(!vecs.length)return null;
-  const ts=t.getTime();
-  if(ts<=vecs[0].t.getTime())return{...vecs[0]};
-  if(ts>=vecs[vecs.length-1].t.getTime())return{...vecs[vecs.length-1]};
-  let lo=0,hi=vecs.length-1;
-  while(hi-lo>1){const mid=(lo+hi)>>1;if(vecs[mid].t.getTime()<=ts)lo=mid;else hi=mid;}
-  const a=vecs[lo],b=vecs[hi],f=(ts-a.t.getTime())/(b.t.getTime()-a.t.getTime());
-  return{x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,vx:a.vx+(b.vx-a.vx)*f,vy:a.vy+(b.vy-a.vy)*f,t};
+// ─── INTERPOLATION (binary search) ───────────────────────────
+function interpolate(vecs, t){
+  if(!vecs.length) return null;
+  const ts = t.getTime();
+  if(ts <= vecs[0].t.getTime())              return {...vecs[0]};
+  if(ts >= vecs[vecs.length-1].t.getTime()) return {...vecs[vecs.length-1]};
+  let lo=0, hi=vecs.length-1;
+  while(hi-lo>1){ const mid=(lo+hi)>>1; if(vecs[mid].t.getTime()<=ts) lo=mid; else hi=mid; }
+  const a=vecs[lo], b=vecs[hi], f=(ts-a.t.getTime())/(b.t.getTime()-a.t.getTime());
+  return { x:a.x+(b.x-a.x)*f, y:a.y+(b.y-a.y)*f, vx:a.vx+(b.vx-a.vx)*f, vy:a.vy+(b.vy-a.vy)*f, t };
 }
 
-/* ═══════════════════════════════════════════════
-   TELEMETRY SOURCES
-═══════════════════════════════════════════════ */
-let stateVectors = buildPhysics();
-let oemLoaded = false;
-let animPos = null, sweepAngle = 0;
-const SMOOTH = 0.06;
+// ─── STATE ───────────────────────────────────────────────────
+let stateVectors  = buildPhysics();
+let pendingVectors = null;       // queued OEM / new source vectors
+let sourceBlend   = 1.0;         // 0→1 blend when switching sources
+let simNow        = new Date();  // mission-time (may differ from wall clock)
+let oemLoaded     = false;
+let animPos       = null;        // smoothly lerped display position
+let sweepAngle    = 0;
+let stars         = null;
+
+// Smooth factor — low = very smooth, prevents jumps when data arrives
+const SMOOTH = 0.025;
 
 let liveNumerics = {
-  active:false,ed:null,md:null,vel:null,comm:null,metSec:null,
-  qx:null,qy:null,qz:null,qw:null,
+  active:false, ed:null, md:null, vel:null, comm:null, metSec:null,
+  qx:null, qy:null, qz:null, qw:null,
   saw:[null,null,null,null,null,null,null,null],
   thrusters:{},
   events:{liftoff:false,icpsBurn:false,primaryBurn:false,srbSep:false,icpsSep:false,smSep:false}
 };
 
 const SRC = {
-  PHYSICS:{label:'PHYSICS MODEL',       color:'rgba(180,120,255,.24)',priority:0},
-  OEM:    {label:'NASA OEM FILE',        color:'rgba(140,220,140,.50)',priority:1},
-  AROW:   {label:'NASA AROW LIVE',       color:'rgba(100,255,180,.80)',priority:3},
+  PHYSICS: {label:'PHYSICS MODEL',  color:'rgba(180,120,255,.28)', priority:0},
+  OEM:     {label:'NASA OEM FILE',  color:'rgba(100,220,120,.55)', priority:1},
+  AROW:    {label:'NASA AROW LIVE', color:'rgba(80,255,160,.85)',  priority:3},
 };
-let activeSource='PHYSICS', lastAROWFetch=0, lastOEMFetch=0;
+let activeSource = 'PHYSICS';
+let lastAROWFetch = 0, lastOEMFetch = 0;
 
-const AROW_BUCKET='https://storage.googleapis.com/storage/v1/b/p-2-cen1/o?prefix=October%2F1%2FOctober&maxResults=6';
-const OEM_URLS=[
+const AROW_BUCKET = 'https://storage.googleapis.com/storage/v1/b/p-2-cen1/o?prefix=October%2F1%2FOctober&maxResults=6';
+const OEM_URLS = [
   'https://www.nasa.gov/wp-content/uploads/2026/04/artemis-ii-ephemeris.txt',
   'https://www.nasa.gov/wp-content/uploads/2026/04/Artemis_II_OEM.txt',
 ];
 
-function setSource(key,extra=''){
-  activeSource=key;
-  const el=document.getElementById('srcBadge');
-  if(el){el.textContent=SRC[key].label+(extra?' · '+extra:'');el.style.color=SRC[key].color;}
+function setSource(key, extra=''){
+  activeSource = key;
+  const el = document.getElementById('srcBadge');
+  if(el){ el.textContent = SRC[key].label + (extra?' · '+extra:''); el.style.color = SRC[key].color; }
 }
 
+// ─── AROW DECODER ────────────────────────────────────────────
 function decodeAROWJson(text){
   try{
-    const d=JSON.parse(text);
-    const g=(k)=>parseFloat(d?.[k]?.Value);
-    const xFt=g('Parameter_2003'),yFt=g('Parameter_2004'),zFt=g('Parameter_2005');
-    const vxFt=g('Parameter_2009'),vyFt=g('Parameter_2010'),vzFt=g('Parameter_2011');
-    if([xFt,yFt,zFt,vxFt,vyFt,vzFt].some(v=>!Number.isFinite(v)))return null;
-    const F=0.0003048;
-    const x=xFt*F,y=yFt*F,z=zFt*F,vx=vxFt*F,vy=vyFt*F,vz=vzFt*F;
-    const earthR=Math.sqrt(x*x+y*y+z*z);
-    const moon=getMoonPos(new Date());
-    const md=Math.sqrt((x-moon.x)**2+(y-moon.y)**2+z*z);
-    const qx=g('Parameter_2012'),qy=g('Parameter_2013'),qz=g('Parameter_2014'),qw=g('Parameter_2015');
-    const metSec=g('Parameter_5001');
-    // SAW angles: Parameters 5002-5009
-    const saw=[0,1,2,3,4,5,6,7].map(i=>g(`Parameter_500${i+2}`));
-    // Thrusters
+    const d = JSON.parse(text);
+    const xFt=parseFloat(d?.Parameter_2003?.Value), yFt=parseFloat(d?.Parameter_2004?.Value), zFt=parseFloat(d?.Parameter_2005?.Value);
+    const vxFt=parseFloat(d?.Parameter_2009?.Value), vyFt=parseFloat(d?.Parameter_2010?.Value), vzFt=parseFloat(d?.Parameter_2011?.Value);
+    if([xFt,yFt,zFt,vxFt,vyFt,vzFt].some(v=>!Number.isFinite(v))) return null;
+    const F = 0.0003048;  // feet → km
+    const x=xFt*F, y=yFt*F, z=zFt*F, vx=vxFt*F, vy=vyFt*F, vz=vzFt*F;
+    const earthR = Math.sqrt(x*x+y*y+z*z);
+    const metSec = parseFloat(d?.Parameter_5001?.Value);
+    // Use mission time for Moon position calculation — keeps Moon in sync
+    const refT = Number.isFinite(metSec) ? new Date(LAUNCH.getTime()+metSec*1000) : new Date();
+    const moon = getMoonPos(refT);
+    const md = Math.sqrt((x-moon.x)**2+(y-moon.y)**2+z*z);
+    const qx=parseFloat(d?.Parameter_2012?.Value), qy=parseFloat(d?.Parameter_2013?.Value);
+    const qz=parseFloat(d?.Parameter_2014?.Value), qw=parseFloat(d?.Parameter_2015?.Value);
+    const saw = [0,1,2,3,4,5,6,7].map(i=>parseFloat(d?.[`Parameter_500${i+2}`]?.Value));
     const tkeys=['SD5A','SR4R','SR3L','SR3R','SD6A','SD5F','SD6F','SA3F','SB5F','SA3A','SA4F','SA4A','SC1F','SC1A','SC2A','SR4L','SB5A','SB6F','SC2F','SB6A','SR2L','SR2R','SR1L','SR1R'];
     const thr={};
-    tkeys.forEach((k,i)=>thr[`attMotor${k}`]=g(`Parameter_20${66+i}`));
+    tkeys.forEach((k,i)=>thr[`attMotor${k}`]=parseFloat(d?.[`Parameter_20${66+i}`]?.Value));
     const events={
-      liftoff:  Number(g('Parameter_2046'))>0||Number(g('Parameter_2026'))>0,
-      icpsBurn: Number(g('Parameter_2100'))>0,
-      primaryBurn:Number(g('Parameter_2048'))>0,
-      srbSep:   Number(g('Parameter_2043'))>0,
-      icpsSep:  Number(g('Parameter_2040'))>0,
-      smSep:    Number(g('Parameter_2028'))>0,
+      liftoff:     Number(parseFloat(d?.Parameter_2046?.Value))>0||Number(parseFloat(d?.Parameter_2026?.Value))>0,
+      icpsBurn:    Number(parseFloat(d?.Parameter_2100?.Value))>0,
+      primaryBurn: Number(parseFloat(d?.Parameter_2048?.Value))>0,
+      srbSep:      Number(parseFloat(d?.Parameter_2043?.Value))>0,
+      icpsSep:     Number(parseFloat(d?.Parameter_2040?.Value))>0,
+      smSep:       Number(parseFloat(d?.Parameter_2028?.Value))>0,
     };
-    return{x,y,z,vx,vy,vz,ed:Math.max(0,earthR-6371),md,vel:Math.sqrt(vx*vx+vy*vy+vz*vz),comm:earthR/299792.458,metSec:Number.isFinite(metSec)?metSec:null,qx:Number.isFinite(qx)?qx:null,qy:Number.isFinite(qy)?qy:null,qz:Number.isFinite(qz)?qz:null,qw:Number.isFinite(qw)?qw:null,saw,thrusters:thr,events};
-  }catch{return null;}
+    return {
+      x,y,z,vx,vy,vz,
+      ed:Math.max(0,earthR-6371), md, vel:Math.sqrt(vx*vx+vy*vy+vz*vz),
+      comm:earthR/299792.458,
+      metSec:Number.isFinite(metSec)?metSec:null,
+      qx:Number.isFinite(qx)?qx:null, qy:Number.isFinite(qy)?qy:null,
+      qz:Number.isFinite(qz)?qz:null, qw:Number.isFinite(qw)?qw:null,
+      saw, thrusters:thr, events
+    };
+  }catch{ return null; }
 }
 
+// ─── DATA SOURCES ────────────────────────────────────────────
 async function tryAROW(){
-  const now=Date.now();
-  if(now-lastAROWFetch<55000)return false;
-  lastAROWFetch=now;
+  const now = Date.now();
+  if(now-lastAROWFetch < 55000) return false;
+  lastAROWFetch = now;
   try{
-    const listRes=await fetch(AROW_BUCKET,{signal:AbortSignal.timeout(10000)});
-    if(!listRes.ok)throw new Error();
-    const list=await listRes.json();
-    if(!list.items?.length)throw new Error();
+    const listRes = await fetch(AROW_BUCKET, {signal:AbortSignal.timeout(10000)});
+    if(!listRes.ok) throw new Error();
+    const list = await listRes.json();
+    if(!list.items?.length) throw new Error();
     list.items.sort((a,b)=>new Date(b.updated)-new Date(a.updated));
     for(const item of list.items){
       try{
-        const txtRes=await fetch(item.mediaLink,{signal:AbortSignal.timeout(10000)});
-        if(!txtRes.ok)continue;
-        const live=decodeAROWJson(await txtRes.text());
-        if(!live)continue;
-        mergePoint({t:new Date(),x:live.x,y:live.y,vx:live.vx,vy:live.vy});
-        liveNumerics={active:true,...live};
-        setSource('AROW',item.name?.split('/').pop()||'');
+        const txtRes = await fetch(item.mediaLink, {signal:AbortSignal.timeout(10000)});
+        if(!txtRes.ok) continue;
+        const live = decodeAROWJson(await txtRes.text());
+        if(!live) continue;
+        // Use mission MET for timestamp so position matches Moon position
+        const t = (live.metSec!=null) ? new Date(LAUNCH.getTime()+live.metSec*1000) : new Date();
+        // Merge into state vectors (no immediate jump — animation lerp handles it)
+        mergePoint({t, x:live.x, y:live.y, vx:live.vx, vy:live.vy});
+        liveNumerics = {
+          active:true, ed:live.ed, md:live.md, vel:live.vel, comm:live.comm, metSec:live.metSec,
+          qx:live.qx, qy:live.qy, qz:live.qz, qw:live.qw,
+          saw:live.saw, thrusters:live.thrusters, events:live.events
+        };
+        setSource('AROW', item.name?.split('/').pop()||'');
         return true;
       }catch{}
     }
-  }catch{}
-  return false;
+    throw new Error();
+  }catch{ return false; }
 }
 
 function parseOEM(text){
-  const vecs=[];let inData=false;
+  const vecs=[]; let inData=false;
   for(const raw of text.split('\n')){
     const l=raw.trim();
     if(l==='DATA_START'){inData=true;continue;}
     if(l==='DATA_STOP'){inData=false;continue;}
-    if(!inData||!l)continue;
+    if(!inData||!l) continue;
     const p=l.split(/\s+/);
-    if(p.length>=7){const t=new Date(p[0]);if(!isNaN(t))vecs.push({t,x:+p[1],y:+p[2],vx:+p[4],vy:+p[5]});}
+    if(p.length>=7){const t=new Date(p[0]);if(!isNaN(t)) vecs.push({t,x:+p[1],y:+p[2],vx:+p[4],vy:+p[5]});}
   }
   return vecs;
 }
 
 async function tryOEM(){
-  if(oemLoaded)return false;
-  if(Date.now()-lastOEMFetch<290000)return false;
-  lastOEMFetch=Date.now();
+  if(oemLoaded) return false;
+  const now = Date.now();
+  if(now-lastOEMFetch < 290000) return false;
+  lastOEMFetch = now;
   for(const url of OEM_URLS){
     try{
-      const r=await fetch(PROXY+encodeURIComponent(url),{signal:AbortSignal.timeout(9000)});
-      const d=await r.json();
-      const v=parseOEM(d.contents||'');
-      if(v.length>10){stateVectors=v;oemLoaded=true;setSource('OEM',`${v.length} pts`);return true;}
+      const r = await fetch(PROXY+encodeURIComponent(url), {signal:AbortSignal.timeout(9000)});
+      const d = await r.json();
+      const v = parseOEM(d.contents||'');
+      if(v.length>10){
+        // Queue for smooth blend — don't instantly replace stateVectors
+        pendingVectors = v;
+        sourceBlend    = 0;  // start blending from 0
+        oemLoaded = true;
+        setSource('OEM', `${v.length} pts`);
+        return true;
+      }
     }catch{}
   }
   return false;
 }
 
+// Merge a single live point into stateVectors without replacing the whole array
 function mergePoint(pt){
-  const ts=pt.t.getTime();
-  const idx=stateVectors.findIndex(v=>Math.abs(v.t.getTime()-ts)<30000);
-  if(idx>=0)stateVectors[idx]=pt;
-  else{stateVectors.push(pt);stateVectors.sort((a,b)=>a.t.getTime()-b.t.getTime());}
+  const ts = pt.t.getTime();
+  const idx = stateVectors.findIndex(v=>Math.abs(v.t.getTime()-ts)<30000);
+  if(idx>=0) stateVectors[idx] = pt;
+  else{ stateVectors.push(pt); stateVectors.sort((a,b)=>a.t.getTime()-b.t.getTime()); }
 }
 
 async function refreshSources(){
-  const ok=await tryAROW();
-  if(!ok)await tryOEM();
-  if(activeSource==='PHYSICS')setSource('PHYSICS');
+  const ok = await tryAROW();
+  if(ok) return;
+  await tryOEM();
+  if(activeSource==='PHYSICS') setSource('PHYSICS');
 }
-setTimeout(()=>tryOEM(),1000);
-setTimeout(()=>tryAROW(),4000);
-setInterval(refreshSources,30000);
+setTimeout(()=>tryOEM(),   1000);
+setTimeout(()=>tryAROW(),  4000);
+setInterval(refreshSources, 30000);
 
-/* ═══════════════════════════════════════════════
-   ATTITUDE / SOLAR / THRUSTER / EVENT UI
-═══════════════════════════════════════════════ */
+// ─── ATTITUDE ────────────────────────────────────────────────
 function quatToEuler(qx,qy,qz,qw){
-  if(![qx,qy,qz,qw].every(v=>Number.isFinite(v)))return null;
-  const sinr=2*(qw*qx+qy*qz),cosr=1-2*(qx*qx+qy*qy);
-  const roll=Math.atan2(sinr,cosr);
-  const sinp=2*(qw*qy-qz*qx);
-  const pitch=Math.abs(sinp)>=1?Math.sign(sinp)*Math.PI/2:Math.asin(sinp);
-  const siny=2*(qw*qz+qx*qy),cosy=1-2*(qy*qy+qz*qz);
-  const yaw=Math.atan2(siny,cosy);
-  return{pitch:pitch*180/Math.PI,yaw:yaw*180/Math.PI,roll:roll*180/Math.PI};
+  if(![qx,qy,qz,qw].every(v=>Number.isFinite(v))) return null;
+  const roll  = Math.atan2(2*(qw*qx+qy*qz), 1-2*(qx*qx+qy*qy));
+  const sinp  = 2*(qw*qy-qz*qx);
+  const pitch = Math.abs(sinp)>=1 ? Math.sign(sinp)*Math.PI/2 : Math.asin(sinp);
+  const yaw   = Math.atan2(2*(qw*qz+qx*qy), 1-2*(qy*qy+qz*qz));
+  return {pitch:pitch*180/Math.PI, yaw:yaw*180/Math.PI, roll:roll*180/Math.PI};
 }
 function updateAttitude(){
-  const L=liveNumerics;
-  document.getElementById('qX').textContent=Number.isFinite(L.qx)?L.qx.toFixed(4):'—';
-  document.getElementById('qY').textContent=Number.isFinite(L.qy)?L.qy.toFixed(4):'—';
-  document.getElementById('qZ').textContent=Number.isFinite(L.qz)?L.qz.toFixed(4):'—';
-  document.getElementById('qW').textContent=Number.isFinite(L.qw)?L.qw.toFixed(4):'—';
-  const e=quatToEuler(L.qx,L.qy,L.qz,L.qw);
-  document.getElementById('attPitch').textContent=e?`${e.pitch.toFixed(1)}°`:'—';
-  document.getElementById('attYaw').textContent=e?`${e.yaw.toFixed(1)}°`:'—';
-  document.getElementById('attRoll').textContent=e?`${e.roll.toFixed(1)}°`:'—';
+  const L = liveNumerics;
+  document.getElementById('qX').textContent = Number.isFinite(L.qx)?L.qx.toFixed(4):'—';
+  document.getElementById('qY').textContent = Number.isFinite(L.qy)?L.qy.toFixed(4):'—';
+  document.getElementById('qZ').textContent = Number.isFinite(L.qz)?L.qz.toFixed(4):'—';
+  document.getElementById('qW').textContent = Number.isFinite(L.qw)?L.qw.toFixed(4):'—';
+  const e = quatToEuler(L.qx,L.qy,L.qz,L.qw);
+  document.getElementById('attPitch').textContent = e?`${e.pitch.toFixed(1)}°`:'—';
+  document.getElementById('attYaw').textContent   = e?`${e.yaw.toFixed(1)}°`  :'—';
+  document.getElementById('attRoll').textContent  = e?`${e.roll.toFixed(1)}°` :'—';
 }
 function updateSolar(){
   const s=liveNumerics.saw||[];
@@ -689,10 +905,9 @@ function updateSolar(){
   document.getElementById('saw4').textContent=fmt(s[3],s[7]);
 }
 function initThrusters(){
-  const grid=document.getElementById('thrusterGrid');grid.innerHTML='';
+  const grid=document.getElementById('thrusterGrid'); grid.innerHTML='';
   for(const key of THRUSTER_KEYS){
-    const div=document.createElement('div');
-    div.className='thruster';div.id=`thr_${key}`;
+    const div=document.createElement('div'); div.className='thruster'; div.id=`thr_${key}`;
     div.innerHTML=`<div class="thruster-name">${key.replace('attMotor','')}</div><div class="thruster-val">—</div>`;
     grid.appendChild(div);
   }
@@ -701,224 +916,366 @@ initThrusters();
 function updateThrusters(){
   const thr=liveNumerics.thrusters||{};
   for(const key of THRUSTER_KEYS){
-    const el=document.getElementById(`thr_${key}`);if(!el)continue;
-    const val=thr[key],label=el.querySelector('.thruster-val');
+    const el=document.getElementById(`thr_${key}`); if(!el) continue;
+    const val=thr[key], label=el.querySelector('.thruster-val');
     if(!Number.isFinite(val)){el.className='thruster';label.textContent='—';continue;}
-    label.textContent=val.toFixed(2);el.className='thruster';
-    if(Math.abs(val)>.75)el.classList.add('active');
-    else if(Math.abs(val)>.25)el.classList.add('warn');
+    label.textContent=val.toFixed(2); el.className='thruster';
+    if(Math.abs(val)>.75) el.classList.add('active');
+    else if(Math.abs(val)>.25) el.classList.add('warn');
   }
 }
 function setDot(id,on,warn=false){
-  const el=document.getElementById(id);if(!el)return;
-  el.className='event-dot';if(warn)el.classList.add('warn');else if(on)el.classList.add('on');
+  const el=document.getElementById(id); if(!el) return;
+  el.className='event-dot';
+  if(warn) el.classList.add('warn'); else if(on) el.classList.add('on');
 }
 function updateEvents(){
   const e=liveNumerics.events||{};
-  setDot('evtLiftoff',!!e.liftoff);setDot('evtICPSBurn',!!e.icpsBurn);
-  setDot('evtPrimaryBurn',!!e.primaryBurn);setDot('evtSRBSep',!!e.srbSep);
-  setDot('evtICPSSep',!!e.icpsSep);setDot('evtSMSep',!!e.smSep);
+  setDot('evtLiftoff',!!e.liftoff); setDot('evtICPSBurn',!!e.icpsBurn);
+  setDot('evtPrimaryBurn',!!e.primaryBurn); setDot('evtSRBSep',!!e.srbSep);
+  setDot('evtICPSSep',!!e.icpsSep); setDot('evtSMSep',!!e.smSep);
 }
 
-/* ═══════════════════════════════════════════════
-   MAP CANVAS
-═══════════════════════════════════════════════ */
-const canvas=document.getElementById('mapCanvas');
-const ctx=canvas.getContext('2d');
-let stars=null;
+// ─── CANVAS MAP ──────────────────────────────────────────────
+const canvas = document.getElementById('mapCanvas');
+const ctx    = canvas.getContext('2d');
 
 function buildStars(w,h){
   const s=[];
-  for(let i=0;i<480;i++) s.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.3+.18,a:.06+Math.random()*.60,warm:Math.random()>.70,purple:Math.random()>.85});
+  for(let i=0;i<480;i++){
+    s.push({x:Math.random()*w, y:Math.random()*h, r:Math.random()*1.3+.18,
+            a:.06+Math.random()*.60, warm:Math.random()>.70, purple:Math.random()>.85});
+  }
   return s;
 }
 new ResizeObserver(()=>{
   const r=document.getElementById('mapWrap').getBoundingClientRect();
-  const w=Math.round(r.width)||400,h=Math.round(r.height)||260;
-  if(canvas.width===w&&canvas.height===h)return;
-  canvas.width=w;canvas.height=h;stars=buildStars(w,h);
+  const w=Math.round(r.width)||400, h=Math.round(r.height)||260;
+  if(canvas.width===w && canvas.height===h) return;
+  canvas.width=w; canvas.height=h; stars=buildStars(w,h);
 }).observe(document.getElementById('mapWrap'));
 
-const w2s=(x,y,sc,ox,oy)=>({sx:ox+x*sc,sy:oy-y*sc});
+const w2s = (x,y,sc,ox,oy) => ({sx:ox+x*sc, sy:oy-y*sc});
 
+// Orion spacecraft icon — purple hologram style
 function drawOrion(cx,cy,angle){
-  ctx.save();ctx.translate(cx,cy);ctx.rotate(angle+Math.PI/2);
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(angle+Math.PI/2);
+  // Glow
   const halo=ctx.createRadialGradient(0,0,0,0,0,40);
-  halo.addColorStop(0,'rgba(180,80,255,.24)');halo.addColorStop(.5,'rgba(140,60,255,.08)');halo.addColorStop(1,'transparent');
-  ctx.fillStyle=halo;ctx.beginPath();ctx.arc(0,0,40,0,Math.PI*2);ctx.fill();
+  halo.addColorStop(0,'rgba(180,80,255,.28)'); halo.addColorStop(.5,'rgba(140,60,255,.09)'); halo.addColorStop(1,'transparent');
+  ctx.fillStyle=halo; ctx.beginPath(); ctx.arc(0,0,40,0,Math.PI*2); ctx.fill();
+  // 4 solar panels — X-pattern
   for(const p of [{dx:-16,dy:-10,rot:-.62},{dx:16,dy:-10,rot:.62},{dx:-16,dy:10,rot:.62},{dx:16,dy:10,rot:-.62}]){
-    ctx.save();ctx.translate(p.dx,p.dy);ctx.rotate(p.rot);
-    ctx.fillStyle='rgba(120,40,200,.22)';ctx.strokeStyle='rgba(200,140,255,.55)';ctx.lineWidth=.8;
-    ctx.fillRect(-11,-4.5,22,9);ctx.strokeRect(-11,-4.5,22,9);ctx.restore();
+    ctx.save(); ctx.translate(p.dx,p.dy); ctx.rotate(p.rot);
+    ctx.fillStyle='rgba(120,40,200,.25)'; ctx.strokeStyle='rgba(200,140,255,.58)'; ctx.lineWidth=.8;
+    ctx.fillRect(-11,-4.5,22,9); ctx.strokeRect(-11,-4.5,22,9);
+    ctx.restore();
   }
-  const smg=ctx.createLinearGradient(-7,4,7,18);smg.addColorStop(0,'#1a0e30');smg.addColorStop(1,'#080418');
-  ctx.fillStyle=smg;ctx.strokeStyle='rgba(180,100,255,.30)';ctx.lineWidth=.7;
-  ctx.beginPath();ctx.roundRect(-7,4,14,14,2);ctx.fill();ctx.stroke();
-  const bg2=ctx.createLinearGradient(-8,-15,8,6);
-  bg2.addColorStop(0,'#e8d8ff');bg2.addColorStop(.5,'#b090d8');bg2.addColorStop(1,'#6a489a');
-  ctx.fillStyle=bg2;ctx.strokeStyle='rgba(200,140,255,.50)';ctx.lineWidth=.9;
-  ctx.beginPath();ctx.roundRect(-8,-15,16,22,5);ctx.fill();ctx.stroke();
-  const ng=ctx.createLinearGradient(0,-27,0,-12);ng.addColorStop(0,'#f8f0ff');ng.addColorStop(1,'#9868c8');
-  ctx.fillStyle=ng;ctx.beginPath();ctx.moveTo(0,-28);ctx.lineTo(8,-13);ctx.lineTo(-8,-13);ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.fillStyle='rgba(200,140,255,.85)';ctx.beginPath();ctx.arc(0,-6,2.8,0,Math.PI*2);ctx.fill();
-  ctx.restore();
-}
-
-/* ── Moon flag: drawn at flyby position, stays permanently ── */
-function drawMoonFlag(moonSx, moonSy, moonR){
-  // pole
-  const px=moonSx+moonR*0.55, pyBase=moonSy-moonR*0.18, pyTop=moonSy-moonR*1.1;
-  ctx.save();
-  ctx.strokeStyle='rgba(255,240,180,.90)';ctx.lineWidth=1.2;
-  ctx.beginPath();ctx.moveTo(px,pyBase);ctx.lineTo(px,pyTop);ctx.stroke();
-  // flag body
-  const fw=moonR*0.55, fh=moonR*0.32;
-  ctx.fillStyle='rgba(220,180,255,.92)';
-  ctx.strokeStyle='rgba(180,100,255,.60)';ctx.lineWidth=.7;
-  ctx.beginPath();ctx.rect(px,pyTop,fw,fh);ctx.fill();ctx.stroke();
-  // NASA worm logo simplified: white 'N'
-  ctx.fillStyle='rgba(255,255,255,.85)';
-  ctx.font=`bold ${Math.max(5,moonR*.18)}px Share Tech Mono,monospace`;
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText('II',px+fw/2,pyTop+fh/2);
-  // flag wave line
-  ctx.strokeStyle='rgba(180,100,255,.30)';ctx.lineWidth=.6;
-  ctx.beginPath();ctx.moveTo(px,pyTop+fh*.5);ctx.bezierCurveTo(px+fw*.3,pyTop+fh*.2,px+fw*.7,pyTop+fh*.8,px+fw,pyTop+fh*.5);ctx.stroke();
-  // glow around flag
-  const fg=ctx.createRadialGradient(px+fw/2,pyTop+fh/2,0,px+fw/2,pyTop+fh/2,moonR*.5);
-  fg.addColorStop(0,'rgba(200,140,255,.10)');fg.addColorStop(1,'transparent');
-  ctx.fillStyle=fg;ctx.beginPath();ctx.arc(px+fw/2,pyTop+fh/2,moonR*.5,0,Math.PI*2);ctx.fill();
-  // label
-  ctx.fillStyle='rgba(220,180,255,.70)';
-  ctx.font=`${Math.max(5,moonR*.14)}px Share Tech Mono,monospace`;
-  ctx.textAlign='left';ctx.textBaseline='top';
-  ctx.fillText('ARTEMIS II',px+fw+2,pyTop);
-  ctx.fillText('FLYBY · APR 6',px+fw+2,pyTop+moonR*.18);
+  // Service module
+  const smg=ctx.createLinearGradient(-7,4,7,18);
+  smg.addColorStop(0,'#1a0e30'); smg.addColorStop(1,'#080418');
+  ctx.fillStyle=smg; ctx.strokeStyle='rgba(180,100,255,.30)'; ctx.lineWidth=.7;
+  ctx.beginPath(); ctx.roundRect(-7,4,14,14,2); ctx.fill(); ctx.stroke();
+  // Capsule body
+  const bg=ctx.createLinearGradient(-8,-15,8,6);
+  bg.addColorStop(0,'#e8d8ff'); bg.addColorStop(.5,'#b090d8'); bg.addColorStop(1,'#6a489a');
+  ctx.fillStyle=bg; ctx.strokeStyle='rgba(200,140,255,.52)'; ctx.lineWidth=.9;
+  ctx.beginPath(); ctx.roundRect(-8,-15,16,22,5); ctx.fill(); ctx.stroke();
+  // Nose cone
+  const ng=ctx.createLinearGradient(0,-27,0,-12);
+  ng.addColorStop(0,'#f8f0ff'); ng.addColorStop(1,'#9868c8');
+  ctx.fillStyle=ng;
+  ctx.beginPath(); ctx.moveTo(0,-28); ctx.lineTo(8,-13); ctx.lineTo(-8,-13); ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  // Window
+  ctx.fillStyle='rgba(200,140,255,.88)';
+  ctx.beginPath(); ctx.arc(0,-6,2.8,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.68)';
+  ctx.beginPath(); ctx.arc(-1,-7,1.1,0,Math.PI*2); ctx.fill();
+  // Engine glow
+  const eng=ctx.createRadialGradient(0,20,0,0,20,9);
+  eng.addColorStop(0,'rgba(255,140,40,.35)'); eng.addColorStop(1,'transparent');
+  ctx.fillStyle=eng; ctx.beginPath(); ctx.arc(0,20,9,0,Math.PI*2); ctx.fill();
   ctx.restore();
 }
 
 function drawMap(now){
-  const W=canvas.width,H=canvas.height;if(!W||!H)return;
+  const W=canvas.width, H=canvas.height;
+  if(!W||!H) return;
   ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='rgba(2,0,8,.35)';ctx.fillRect(0,0,W,H);
+  // Semi-transparent dark background — cockpit shows through on map area
+  ctx.fillStyle='rgba(2,0,8,.55)'; ctx.fillRect(0,0,W,H);
+  // Nebula glow
   const nb1=ctx.createRadialGradient(W*.18,H*.22,0,W*.18,H*.22,W*.38);
-  nb1.addColorStop(0,'rgba(80,20,160,.10)');nb1.addColorStop(1,'transparent');
-  ctx.fillStyle=nb1;ctx.fillRect(0,0,W,H);
+  nb1.addColorStop(0,'rgba(70,18,140,.12)'); nb1.addColorStop(1,'transparent');
+  ctx.fillStyle=nb1; ctx.fillRect(0,0,W,H);
+  // Stars — mix of white, warm and purple
   if(stars){
-    for(const s of stars){ctx.globalAlpha=s.a;ctx.fillStyle=s.purple?'rgba(200,150,255,.9)':s.warm?'#ffe8c8':'#c8c0ff';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();}
+    for(const s of stars){
+      ctx.globalAlpha=s.a;
+      ctx.fillStyle=s.purple?'rgba(200,150,255,.9)':s.warm?'#ffe8c8':'#d0d8ff';
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
+    }
     ctx.globalAlpha=1;
   }
-  const moon=getMoonPos(now);
-  const scale=Math.min(W,H)*0.40/Math.sqrt(moon.x**2+moon.y**2);
-  const ox=W*0.46,oy=H*0.56;
-  ctx.lineWidth=1;ctx.setLineDash([3,7]);
-  for(const[r,col]of[[100000,'rgba(160,80,255,.05)'],[200000,'rgba(160,80,255,.05)'],[384400,'rgba(120,60,200,.07)']]){
-    const pr=r*scale;ctx.beginPath();ctx.arc(ox,oy,pr,0,Math.PI*2);ctx.strokeStyle=col;ctx.stroke();
+
+  const moon  = getMoonPos(now);
+  const scale = Math.min(W,H)*0.40 / Math.sqrt(moon.x**2+moon.y**2);
+  const ox=W*0.46, oy=H*0.56;
+
+  // ── MOON ORBIT PATH (full ellipse, dashed gold) ──────────
+  // Draw the Moon's full orbital ellipse sampled at 6-hour steps
+  ctx.beginPath(); let firstOrbit=true;
+  for(let dt=0; dt<=MOON_PER; dt+=6*3600){
+    const mp=getMoonPos(new Date(now.getTime()-MOON_PER*500+dt*1000));
+    const sp=w2s(mp.x,mp.y,scale,ox,oy);
+    if(firstOrbit){ctx.moveTo(sp.sx,sp.sy);firstOrbit=false;}else ctx.lineTo(sp.sx,sp.sy);
+  }
+  ctx.strokeStyle='rgba(220,200,100,.20)';ctx.lineWidth=1.1;ctx.setLineDash([4,6]);ctx.stroke();ctx.setLineDash([]);
+
+  // ── MOON RECENT TRAIL (5-day history, fading gold) ───────
+  const moonTrail=[];
+  for(let dt=5*24*3600; dt>=0; dt-=4*3600){
+    moonTrail.push(w2s(getMoonPos(new Date(now.getTime()-dt*1000)).x, getMoonPos(new Date(now.getTime()-dt*1000)).y, scale,ox,oy));
+  }
+  for(let i=1;i<moonTrail.length;i++){
+    const a_=i/moonTrail.length;
+    ctx.beginPath(); ctx.moveTo(moonTrail[i-1].sx,moonTrail[i-1].sy); ctx.lineTo(moonTrail[i].sx,moonTrail[i].sy);
+    ctx.strokeStyle=`rgba(220,200,100,${0.05+a_*0.22})`; ctx.lineWidth=1; ctx.stroke();
+  }
+
+  // Distance rings
+  ctx.lineWidth=1; ctx.setLineDash([3,7]);
+  for(const[r,col] of [[100000,'rgba(140,70,255,.06)'],[200000,'rgba(140,70,255,.06)'],[384400,'rgba(100,50,200,.08)']]){
+    const pr=r*scale; ctx.beginPath(); ctx.arc(ox,oy,pr,0,Math.PI*2); ctx.strokeStyle=col; ctx.stroke();
   }
   ctx.setLineDash([]);
+
   // Earth
   const er=Math.min(W,H)*0.11;
   const eg=ctx.createRadialGradient(ox-er*.3,oy-er*.3,er*.04,ox,oy,er);
-  eg.addColorStop(0,'#3040a0');eg.addColorStop(.45,'#18205a');eg.addColorStop(1,'#040818');
-  ctx.beginPath();ctx.arc(ox,oy,er,0,Math.PI*2);ctx.fillStyle=eg;ctx.fill();
-  ctx.strokeStyle='rgba(120,80,255,.18)';ctx.lineWidth=Math.max(1.5,er*.13);
-  ctx.beginPath();ctx.arc(ox,oy,er+er*.11,0,Math.PI*2);ctx.stroke();
-  ctx.save();ctx.beginPath();ctx.arc(ox,oy,er,0,Math.PI*2);ctx.clip();
-  ctx.fillStyle='rgba(40,20,80,.30)';
-  ctx.beginPath();ctx.ellipse(ox-er*.28,oy-er*.08,er*.26,er*.18,.3,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.ellipse(ox+er*.2,oy+er*.1,er*.16,er*.24,-.35,0,Math.PI*2);ctx.fill();
+  eg.addColorStop(0,'#3040a0'); eg.addColorStop(.45,'#18205a'); eg.addColorStop(1,'#040818');
+  ctx.beginPath(); ctx.arc(ox,oy,er,0,Math.PI*2); ctx.fillStyle=eg; ctx.fill();
+  ctx.strokeStyle='rgba(120,80,255,.20)'; ctx.lineWidth=Math.max(1.5,er*.13);
+  ctx.beginPath(); ctx.arc(ox,oy,er+er*.11,0,Math.PI*2); ctx.stroke();
+  // Continent hints
+  ctx.save(); ctx.beginPath(); ctx.arc(ox,oy,er,0,Math.PI*2); ctx.clip();
+  ctx.fillStyle='rgba(40,20,80,.35)';
+  ctx.beginPath(); ctx.ellipse(ox-er*.28,oy-er*.08,er*.26,er*.18,.3,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(ox+er*.2,oy+er*.1,er*.16,er*.24,-.35,0,Math.PI*2); ctx.fill();
   ctx.restore();
-  ctx.fillStyle='rgba(200,140,255,.75)';ctx.font=`bold ${Math.max(8,W*.014)}px Share Tech Mono,monospace`;ctx.textAlign='center';ctx.fillText('EARTH',ox,oy-er*1.35);
-  // Moon
-  const ms=w2s(moon.x,moon.y,scale,ox,oy);
+  ctx.fillStyle='rgba(200,160,255,.80)'; ctx.font=`bold ${Math.max(8,W*.014)}px Share Tech Mono,monospace`;
+  ctx.textAlign='center'; ctx.fillText('EARTH',ox,oy-er*1.35);
+
+  // Moon — position always from simNow (mission-time synced)
+  const ms_=w2s(moon.x,moon.y,scale,ox,oy);
   const mr=Math.min(W,H)*0.055;
-  const mg=ctx.createRadialGradient(ms.sx-mr*.25,ms.sy-mr*.25,mr*.04,ms.sx,ms.sy,mr);
-  mg.addColorStop(0,'#e0d4f8');mg.addColorStop(.55,'#a090c8');mg.addColorStop(1,'#504860');
-  ctx.beginPath();ctx.arc(ms.sx,ms.sy,mr,0,Math.PI*2);ctx.fillStyle=mg;ctx.fill();
-  ctx.save();ctx.beginPath();ctx.arc(ms.sx,ms.sy,mr,0,Math.PI*2);ctx.clip();
-  const mt=ctx.createLinearGradient(ms.sx-mr,ms.sy,ms.sx+mr*.5,ms.sy);
-  mt.addColorStop(0,'rgba(0,0,0,.42)');mt.addColorStop(.8,'transparent');
-  ctx.fillStyle=mt;ctx.fillRect(ms.sx-mr,ms.sy-mr,mr*2,mr*2);ctx.restore();
-  ctx.fillStyle='rgba(220,180,100,.80)';ctx.font=`bold ${Math.max(8,W*.014)}px Share Tech Mono,monospace`;ctx.textAlign='center';ctx.fillText('MOON',ms.sx,ms.sy-mr*1.58);
+  const mg=ctx.createRadialGradient(ms_.sx-mr*.25,ms_.sy-mr*.25,mr*.04,ms_.sx,ms_.sy,mr);
+  mg.addColorStop(0,'#e0d4f8'); mg.addColorStop(.55,'#a090c8'); mg.addColorStop(1,'#504860');
+  ctx.beginPath(); ctx.arc(ms_.sx,ms_.sy,mr,0,Math.PI*2); ctx.fillStyle=mg; ctx.fill();
+  // Terminator shadow
+  ctx.save(); ctx.beginPath(); ctx.arc(ms_.sx,ms_.sy,mr,0,Math.PI*2); ctx.clip();
+  const mt=ctx.createLinearGradient(ms_.sx-mr,ms_.sy,ms_.sx+mr*.5,ms_.sy);
+  mt.addColorStop(0,'rgba(0,0,0,.44)'); mt.addColorStop(.8,'transparent');
+  ctx.fillStyle=mt; ctx.fillRect(ms_.sx-mr,ms_.sy-mr,mr*2,mr*2); ctx.restore();
+  ctx.fillStyle='rgba(230,200,100,.85)'; ctx.font=`bold ${Math.max(8,W*.014)}px Share Tech Mono,monospace`;
+  ctx.textAlign='center'; ctx.fillText('MOON',ms_.sx,ms_.sy-mr*1.58);
 
-  // ── MOON FLAG — appears after flyby time, stays forever ──
-  const nowMs = now.getTime();
-  if(nowMs >= FLYBY_T){
-    drawMoonFlag(ms.sx, ms.sy, mr);
+  // Active vectors (blend between physics and pending OEM)
+  const drawVecs = (pendingVectors && sourceBlend<1) ? stateVectors : stateVectors;
+
+  // Full planned trajectory (very dim)
+  ctx.beginPath(); let first=true;
+  for(const v of drawVecs){
+    const p=w2s(v.x,v.y,scale,ox,oy);
+    if(first){ctx.moveTo(p.sx,p.sy);first=false;}else ctx.lineTo(p.sx,p.sy);
   }
+  ctx.strokeStyle='rgba(140,70,255,.07)'; ctx.lineWidth=1; ctx.stroke();
 
-  // Trajectory
-  ctx.beginPath();let first=true;
-  for(const v of stateVectors){const p=w2s(v.x,v.y,scale,ox,oy);if(first){ctx.moveTo(p.sx,p.sy);first=false;}else ctx.lineTo(p.sx,p.sy);}
-  ctx.strokeStyle='rgba(160,80,255,.06)';ctx.lineWidth=1;ctx.stroke();
-  // Trail + Orion
+  // Animated Orion trail + position
   if(animPos){
     const trailPts=[];
-    for(const v of stateVectors){if(v.t.getTime()>nowMs)break;trailPts.push(w2s(v.x,v.y,scale,ox,oy));}
+    for(const v of drawVecs){
+      if(v.t.getTime()>now.getTime()) break;
+      trailPts.push(w2s(v.x,v.y,scale,ox,oy));
+    }
     const tip=w2s(animPos.x,animPos.y,scale,ox,oy);
     trailPts.push(tip);
+    // Draw trail with gradient brightness (old=dim, new=bright)
     if(trailPts.length>1){
       for(let i=1;i<trailPts.length;i++){
         const t_=(i-1)/(trailPts.length-1);
-        ctx.beginPath();ctx.moveTo(trailPts[i-1].sx,trailPts[i-1].sy);ctx.lineTo(trailPts[i].sx,trailPts[i].sy);
-        ctx.strokeStyle=`rgba(${Math.round(100+t_*100)},${Math.round(60+t_*80)},255,${0.14+t_*0.55})`;
-        ctx.lineWidth=Math.max(.8,1.0+t_*1.2);ctx.shadowColor='rgba(160,80,255,.18)';ctx.shadowBlur=3;ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(trailPts[i-1].sx,trailPts[i-1].sy);
+        ctx.lineTo(trailPts[i].sx,trailPts[i].sy);
+        // gradient: deep purple → bright cyan-white
+        const r=Math.round(100+t_*155), g=Math.round(60+t_*180), b=255;
+        ctx.strokeStyle=`rgba(${r},${g},${b},${0.12+t_*0.65})`;
+        ctx.lineWidth=Math.max(.8, 0.9+t_*1.4);
+        ctx.stroke();
       }
-      ctx.shadowBlur=0;
     }
-    drawOrion(tip.sx,tip.sy,Math.atan2(animPos.vy,animPos.vx));
-    ctx.fillStyle='rgba(200,140,255,.62)';ctx.font=`${Math.max(6,W*.012)}px Share Tech Mono,monospace`;ctx.textAlign='left';ctx.fillText('◀ ORION',tip.sx+26,tip.sy+2);
+    drawOrion(tip.sx,tip.sy, Math.atan2(animPos.vy,animPos.vx));
+    ctx.fillStyle='rgba(200,160,255,.65)'; ctx.font=`${Math.max(6,W*.012)}px Share Tech Mono,monospace`;
+    ctx.textAlign='left'; ctx.fillText('◀ ORION',tip.sx+26,tip.sy+2);
   }
+
+  // Radar sweep arc on Earth
   sweepAngle+=.014;
-  ctx.strokeStyle='rgba(160,80,255,.07)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(ox,oy,er,sweepAngle,sweepAngle+.42);ctx.stroke();
+  ctx.strokeStyle='rgba(160,80,255,.08)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.arc(ox,oy,er,sweepAngle,sweepAngle+.42); ctx.stroke();
 }
 
 function renderTimeline(elSec){
-  const tl=document.getElementById('tlContainer');if(!tl)return;tl.innerHTML='';
+  const tl=document.getElementById('tlContainer'); if(!tl) return; tl.innerHTML='';
   for(let i=0;i<MILESTONES.length;i++){
-    const ms=MILESTONES[i],next=MILESTONES[i+1],done=elSec>ms.t,active=done&&(!next||elSec<next.t);
-    const d=document.createElement('div');d.className='tl-item'+(done?' done':'')+(active?' active':'');
+    const ms=MILESTONES[i], next=MILESTONES[i+1], done=elSec>ms.t, active=done&&(!next||elSec<next.t);
+    const d=document.createElement('div');
+    d.className='tl-item'+(done?' done':'')+(active?' active':'');
     d.innerHTML=`<div class="tl-dot"></div><div><div class="tl-name">${ms.label}</div><div class="tl-desc">${ms.desc}</div></div>`;
     tl.appendChild(d);
   }
 }
 
+// ─── TRAJECTORY API ───────────────────────────────────────────
+function getStateAtTime(input){
+  const t = input instanceof Date ? input : new Date(input);
+  if(Number.isNaN(t.getTime())) return null;
+
+  let pos = interpolate(stateVectors, t);
+  if(pendingVectors){
+    const nextPos = interpolate(pendingVectors, t);
+    if(pos && nextPos && sourceBlend < 1){
+      pos = {
+        x: lerp(pos.x, nextPos.x, sourceBlend),
+        y: lerp(pos.y, nextPos.y, sourceBlend),
+        vx: lerp(pos.vx, nextPos.vx, sourceBlend),
+        vy: lerp(pos.vy, nextPos.vy, sourceBlend),
+        t
+      };
+    }
+  }
+  if(!pos) return null;
+
+  const moon = getMoonPos(t);
+  const ed = Math.sqrt(pos.x**2 + pos.y**2);
+  const md = Math.sqrt((pos.x-moon.x)**2 + (pos.y-moon.y)**2);
+  const vel = Math.sqrt(pos.vx**2 + pos.vy**2);
+  const comm = ed / 299792.458;
+  const metSec = Math.max(0, (t - LAUNCH) / 1000);
+  const [phase, phaseDesc] = getPhase(ed, md);
+
+  return {
+    ...pos,
+    earthDist: ed,
+    moonDist: md,
+    speed: vel,
+    commDelay: comm,
+    metSec,
+    metText: fmet(metSec),
+    earthDistText: fkm(ed),
+    moonDistText: fkm(md),
+    speedText: fkms(vel),
+    commDelayText: comm.toFixed(1) + 's',
+    phase,
+    phaseDesc,
+    source: activeSource
+  };
+}
+
+function exportTrajectoryJSON(){
+  const pts = stateVectors.map(v => ({
+    t: v.t instanceof Date ? v.t.toISOString() : new Date(v.t).toISOString(),
+    x: v.x, y: v.y, vx: v.vx, vy: v.vy
+  }));
+  return JSON.stringify({
+    launch: LAUNCH.toISOString(),
+    source: activeSource,
+    points: pts
+  }, null, 2);
+}
+
+window.getStateAtTime = getStateAtTime;
+window.exportTrajectoryJSON = exportTrajectoryJSON;
+
+// ─── MAIN TICK ───────────────────────────────────────────────
 function tick(){
-  const now=new Date();
-  const L=liveNumerics;
-  const el=(L.active&&Number.isFinite(L.metSec))?L.metSec:Math.max(0,(now-LAUNCH)/1000);
-  const prog=Math.min(1,el/DUR);
-  const truePos=interpolate(stateVectors,now);
+  const wallNow = new Date();
+  const L = liveNumerics;
+
+  // simNow: use spacecraft MET when AROW is live; else use wall clock
+  // This keeps Moon position and Orion position computed at the same moment in time
+  simNow = (L.active && Number.isFinite(L.metSec))
+    ? new Date(LAUNCH.getTime() + L.metSec*1000)
+    : wallNow;
+
+  const el   = Math.max(0, (simNow - LAUNCH) / 1000);
+  const prog = Math.min(1, el / DUR);
+
+  // ── SOURCE BLEND: smoothly transition from physics to OEM ──
+  let truePos = interpolate(stateVectors, simNow);
+  if(pendingVectors){
+    const nextPos = interpolate(pendingVectors, simNow);
+    if(truePos && nextPos){
+      sourceBlend = Math.min(1, sourceBlend + 0.008);  // ~125 frames to fully blend
+      truePos = {
+        x:  lerp(truePos.x,  nextPos.x,  sourceBlend),
+        y:  lerp(truePos.y,  nextPos.y,  sourceBlend),
+        vx: lerp(truePos.vx, nextPos.vx, sourceBlend),
+        vy: lerp(truePos.vy, nextPos.vy, sourceBlend),
+        t:  simNow
+      };
+      if(sourceBlend >= 1){ stateVectors=pendingVectors; pendingVectors=null; }
+    } else {
+      stateVectors=pendingVectors; pendingVectors=null;
+      truePos = interpolate(stateVectors, simNow);
+    }
+  }
+
+  // ── ANIMATION LERP — prevents jumps when new live point arrives ──
   if(truePos){
-    if(!animPos){animPos={x:truePos.x,y:truePos.y,vx:truePos.vx,vy:truePos.vy};}
-    else{animPos.x=lerp(animPos.x,truePos.x,SMOOTH);animPos.y=lerp(animPos.y,truePos.y,SMOOTH);animPos.vx=lerp(animPos.vx,truePos.vx,SMOOTH);animPos.vy=lerp(animPos.vy,truePos.vy,SMOOTH);}
-    drawMap(now);
-    const moon=getMoonPos(now);
-    const ed=(L.active&&L.ed!=null)?L.ed:Math.sqrt(truePos.x**2+truePos.y**2);
-    const md=(L.active&&L.md!=null)?L.md:Math.sqrt((truePos.x-moon.x)**2+(truePos.y-moon.y)**2);
-    const vel=(L.active&&L.vel!=null)?L.vel:Math.sqrt(truePos.vx**2+truePos.vy**2);
-    const comm=(L.active&&L.comm!=null)?L.comm:ed/299792.458;
-    const[pn,pd]=getPhase(ed,md);
-    document.getElementById('vEd').textContent=fkm(ed);
-    document.getElementById('vMd').textContent=fkm(md);
-    document.getElementById('vVel').textContent=fkms(vel);
-    document.getElementById('vComm').textContent=comm.toFixed(1)+'s';
-    document.getElementById('vPhase').textContent=pn;
-    document.getElementById('phaseBig').textContent=pn;
-    document.getElementById('phaseDesc').textContent=pd;
-    const ang=Math.atan2(truePos.y,truePos.x)*180/Math.PI;
-    document.getElementById('vDecl').textContent=(ang*.08).toFixed(2)+'°';
-    document.getElementById('vLon').textContent=((ang+180)%360).toFixed(2)+'°';
-    document.getElementById('vApogee').textContent=fkm(ed*1.02);
-    document.getElementById('vPerigee').textContent=fkm(ed*0.98);
-    document.getElementById('vPeriod').textContent=(2*Math.PI*ed/Math.max(vel,.001)/3600).toFixed(1)+'h';
-  }else{drawMap(now);}
-  document.getElementById('metDisplay').textContent=fmet(el);
-  document.getElementById('progFill').style.width=(prog*100)+'%';
-  document.getElementById('progPct').textContent=Math.round(prog*100)+'%';
-  document.getElementById('daysLeft').textContent=fRem(el);
-  updateAttitude();updateSolar();updateThrusters();updateEvents();
-  renderTimeline(el);
+    if(!animPos){
+      animPos = {x:truePos.x, y:truePos.y, vx:truePos.vx, vy:truePos.vy};
+    } else {
+      animPos.x  = lerp(animPos.x,  truePos.x,  SMOOTH);
+      animPos.y  = lerp(animPos.y,  truePos.y,  SMOOTH);
+      animPos.vx = lerp(animPos.vx, truePos.vx, SMOOTH);
+      animPos.vy = lerp(animPos.vy, truePos.vy, SMOOTH);
+    }
+
+    drawMap(simNow);  // Moon uses simNow → always in sync with spacecraft
+
+    const moon = getMoonPos(simNow);
+    const ed   = (L.active&&L.ed!=null)   ? L.ed   : Math.sqrt(truePos.x**2+truePos.y**2);
+    const md   = (L.active&&L.md!=null)   ? L.md   : Math.sqrt((truePos.x-moon.x)**2+(truePos.y-moon.y)**2);
+    const vel  = (L.active&&L.vel!=null)  ? L.vel  : Math.sqrt(truePos.vx**2+truePos.vy**2);
+    const comm = (L.active&&L.comm!=null) ? L.comm : ed/299792.458;
+    const [pn,pd] = getPhase(ed,md);
+
+    document.getElementById('vEd').textContent   = fkm(ed);
+    document.getElementById('vMd').textContent   = fkm(md);
+    document.getElementById('vVel').textContent  = fkms(vel);
+    document.getElementById('vComm').textContent = comm.toFixed(1)+'s';
+    document.getElementById('vPhase').textContent= pn;
+    document.getElementById('phaseBig').textContent  = pn;
+    document.getElementById('phaseDesc').textContent = pd;
+
+    const ang = Math.atan2(truePos.y, truePos.x)*180/Math.PI;
+    document.getElementById('vDecl').textContent    = (ang*.08).toFixed(2)+'°';
+    document.getElementById('vLon').textContent     = ((ang+180)%360).toFixed(2)+'°';
+    document.getElementById('vApogee').textContent  = fkm(ed*1.02);
+    document.getElementById('vPerigee').textContent = fkm(ed*0.98);
+    document.getElementById('vPeriod').textContent  = (2*Math.PI*ed/Math.max(vel,.001)/3600).toFixed(1)+'h';
+  } else {
+    drawMap(simNow);
+  }
+
+  document.getElementById('metDisplay').textContent = fmet(el);
+  document.getElementById('progFill').style.width   = (prog*100)+'%';
+  document.getElementById('progPct').textContent    = Math.round(prog*100)+'%';
+  document.getElementById('daysLeft').textContent   = fRem(el);
+
+  updateAttitude(); updateSolar(); updateThrusters(); updateEvents(); renderTimeline(el);
   requestAnimationFrame(tick);
 }
 tick();
